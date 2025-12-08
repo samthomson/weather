@@ -114,14 +114,16 @@ export function WeatherChart({ data }: WeatherChartProps) {
       legend: {
         display: true,
         position: 'top' as const,
+        align: 'center' as const,
         labels: {
           font: {
             size: 12,
             weight: 500,
           },
-          padding: 16,
+          padding: 20,
           usePointStyle: true,
           pointStyle: 'circle',
+          boxWidth: 8,
         },
       },
       tooltip: {
@@ -230,7 +232,7 @@ export function WeatherChart({ data }: WeatherChartProps) {
       <CardHeader className="pb-4">
         <CardTitle className="text-lg">Historical Data</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <div className="h-96">
           <Line data={chartData} options={options} />
         </div>

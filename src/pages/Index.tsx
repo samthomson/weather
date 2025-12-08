@@ -125,33 +125,30 @@ const Index = () => {
                 label="Temperature"
                 value={currentReading.temperature}
                 unit="°C"
-                min={-10}
-                max={50}
                 icon={<Wind className="w-6 h-6 text-red-600" />}
                 color="text-red-600"
                 secondaryColor="bg-red-50 dark:bg-red-950/30"
+                showGauge={false}
               />
 
               <WeatherGauge
                 label="Humidity"
                 value={currentReading.humidity}
                 unit="%"
-                min={0}
-                max={100}
                 icon={<Droplets className="w-6 h-6 text-blue-600" />}
                 color="text-blue-600"
                 secondaryColor="bg-blue-50 dark:bg-blue-950/30"
+                showGauge={true}
               />
 
               <WeatherGauge
                 label="PM2.5"
                 value={currentReading.pm25}
                 unit="µg/m³"
-                min={0}
-                max={100}
                 icon={<Cloud className="w-6 h-6 text-purple-600" />}
                 color="text-purple-600"
                 secondaryColor="bg-purple-50 dark:bg-purple-950/30"
+                showGauge={false}
               />
             </div>
 
