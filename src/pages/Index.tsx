@@ -128,7 +128,6 @@ const Index = () => {
                 icon={<Wind className="w-6 h-6 text-red-600" />}
                 color="text-red-600"
                 secondaryColor="bg-red-50 dark:bg-red-950/30"
-                showGauge={false}
               />
 
               <WeatherGauge
@@ -138,7 +137,6 @@ const Index = () => {
                 icon={<Droplets className="w-6 h-6 text-blue-600" />}
                 color="text-blue-600"
                 secondaryColor="bg-blue-50 dark:bg-blue-950/30"
-                showGauge={true}
               />
 
               <WeatherGauge
@@ -148,7 +146,6 @@ const Index = () => {
                 icon={<Cloud className="w-6 h-6 text-purple-600" />}
                 color="text-purple-600"
                 secondaryColor="bg-purple-50 dark:bg-purple-950/30"
-                showGauge={false}
               />
             </div>
 
