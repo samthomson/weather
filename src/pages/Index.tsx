@@ -49,12 +49,23 @@ const Index = () => {
 
   const currentReading = readings?.[0];
 
-  // Filter data for last hour - recalculate on each render to ensure accuracy
-  const lastHourReadings = React.useMemo(() => {
-    if (!readings) return [];
+  // Split data: last hour (detailed) vs 24 hour (hourly samples)
+  const { lastHourReadings, last24HourReadings } = React.useMemo(() => {
+    if (!readings) return { lastHourReadings: [], last24HourReadings: [] };
+
     const now = Math.floor(Date.now() / 1000);
     const oneHourAgo = now - 3600; // 1 hour in seconds
-    return readings.filter(r => r.timestamp >= oneHourAgo);
+
+    // Last hour: all recent detailed readings
+    const lastHour = readings.filter(r => r.timestamp >= oneHourAgo);
+
+    // Last 24 hours: only readings OLDER than 1 hour (the hourly samples)
+    const last24Hour = readings.filter(r => r.timestamp < oneHourAgo);
+
+    return {
+      lastHourReadings: lastHour,
+      last24HourReadings: last24Hour,
+    };
   }, [readings]);
 
   // Convert temperature
@@ -237,7 +248,7 @@ const Index = () => {
                 title="Last Hour"
               />
               <WeatherChart
-                data={readings || []}
+                data={last24HourReadings}
                 units={units}
                 title="Last 24 Hours"
               />
