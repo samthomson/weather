@@ -1,4 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
 
 interface WeatherGaugeProps {
   label: string;
@@ -11,15 +18,35 @@ interface WeatherGaugeProps {
 }
 
 // PM2.5 Air Quality Scale
-function getAirQualityInfo(pm25: number): { label: string; color: string; bgColor: string } {
+function getAirQualityInfo(pm25: number): { label: string; description: string; color: string; bgColor: string } {
   if (pm25 <= 12) {
-    return { label: 'Very Good', color: 'text-green-600', bgColor: 'bg-green-50 dark:bg-green-950/30' };
+    return {
+      label: 'Very Good',
+      description: 'Air quality is excellent. No health concerns.',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50 dark:bg-green-950/30'
+    };
   } else if (pm25 <= 35) {
-    return { label: 'Moderate', color: 'text-yellow-600', bgColor: 'bg-yellow-50 dark:bg-yellow-950/30' };
+    return {
+      label: 'Moderate',
+      description: 'Air quality is acceptable. Air is OK but not clean.',
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50 dark:bg-yellow-950/30'
+    };
   } else if (pm25 <= 55) {
-    return { label: 'Unhealthy for Sensitive Groups', color: 'text-orange-600', bgColor: 'bg-orange-50 dark:bg-orange-950/30' };
+    return {
+      label: 'Unhealthy for Sensitive Groups',
+      description: 'People with respiratory conditions should limit prolonged outdoor exertion.',
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50 dark:bg-orange-950/30'
+    };
   } else {
-    return { label: 'Bad', color: 'text-red-600', bgColor: 'bg-red-50 dark:bg-red-950/30' };
+    return {
+      label: 'Bad',
+      description: 'Everyone may experience health effects. Avoid prolonged outdoor activity.',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50 dark:bg-red-950/30'
+    };
   }
 }
 
@@ -63,8 +90,29 @@ export function WeatherGauge({
           {/* Air quality scale (only for PM2.5) */}
           {showAirQualityScale && airQuality && (
             <div className="space-y-2">
-              <div className={`text-sm font-semibold ${displayColor}`}>
-                {airQuality.label}
+              <div className="flex items-center gap-2">
+                <div className={`text-sm font-semibold ${displayColor}`}>
+                  {airQuality.label}
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className={`w-4 h-4 ${displayColor} cursor-help`} />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <div className="space-y-2">
+                        <p className="font-semibold">{airQuality.label}</p>
+                        <p className="text-sm">{airQuality.description}</p>
+                        <div className="text-xs space-y-1 pt-2 border-t">
+                          <p><strong>0-12 µg/m³:</strong> Very Good</p>
+                          <p><strong>12-35 µg/m³:</strong> Moderate</p>
+                          <p><strong>35-55 µg/m³:</strong> Unhealthy for Sensitive</p>
+                          <p><strong>55+ µg/m³:</strong> Bad</p>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               <div className="relative h-2 bg-gradient-to-r from-green-500 via-yellow-500 via-orange-500 to-red-500 rounded-full">
                 {/* Indicator marker */}
