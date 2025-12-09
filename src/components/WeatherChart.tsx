@@ -26,9 +26,10 @@ ChartJS.register(
 
 interface WeatherChartProps {
   data: WeatherReading[];
+  units?: 'metric' | 'imperial';
 }
 
-export function WeatherChart({ data }: WeatherChartProps) {
+export function WeatherChart({ data, units = 'metric' }: WeatherChartProps) {
   if (data.length === 0) {
     return (
       <Card className="col-span-full border-dashed">
@@ -52,15 +53,25 @@ export function WeatherChart({ data }: WeatherChartProps) {
       });
     });
 
-  const temperatureData = data.slice().reverse().map((r) => r.temperature);
+  // Convert temperature based on units
+  const convertTemp = (celsius: number) => {
+    if (units === 'imperial') {
+      return (celsius * 9/5) + 32;
+    }
+    return celsius;
+  };
+
+  const temperatureData = data.slice().reverse().map((r) => convertTemp(r.temperature));
   const humidityData = data.slice().reverse().map((r) => r.humidity);
   const pm25Data = data.slice().reverse().map((r) => r.pm25);
+
+  const tempUnit = units === 'imperial' ? '°F' : '°C';
 
   const chartData = {
     labels,
     datasets: [
       {
-        label: 'Temperature (°C)',
+        label: `Temperature (${tempUnit})`,
         data: temperatureData,
         borderColor: 'rgb(239, 68, 68)',
         backgroundColor: 'rgba(239, 68, 68, 0.05)',

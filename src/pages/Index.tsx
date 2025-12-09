@@ -6,6 +6,14 @@ import { WeatherChart } from '@/components/WeatherChart';
 import { Card, CardContent } from '@/components/ui/card';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const RELAY_URL = 'wss://relay.samt.st';
 const AUTHOR_PUBKEY = '55bb2db9b6b43291bc9ea64be226bf1dd0bbf60c71a7526c4f01ced3a2fc17f7';
@@ -17,6 +25,7 @@ const Index = () => {
   });
 
   const { data: readings, isLoading, error, refetch } = useWeatherData(RELAY_URL, AUTHOR_PUBKEY);
+  const [units, setUnits] = useLocalStorage<'metric' | 'imperial'>('weather:units', 'metric');
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -29,18 +38,40 @@ const Index = () => {
 
   const currentReading = readings?.[0];
 
+  // Convert temperature
+  const convertTemp = (celsius: number) => {
+    if (units === 'imperial') {
+      return (celsius * 9/5) + 32;
+    }
+    return celsius;
+  };
+
+  const tempUnit = units === 'imperial' ? '°F' : '°C';
+  const tempLabel = units === 'imperial' ? 'Temperature (°F)' : 'Temperature (°C)';
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="space-y-1">
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
-              Weather Station
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Real-time environmental monitoring from Nostr relay
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
+                Weather Station
+              </h1>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Real-time environmental monitoring from Nostr relay
+              </p>
+            </div>
+            <Select value={units} onValueChange={(value: 'metric' | 'imperial') => setUnits(value)}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="metric">Metric</SelectItem>
+                <SelectItem value="imperial">Imperial</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -106,8 +137,8 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <WeatherGauge
                 label="Temperature"
-                value={currentReading.temperature}
-                unit="°C"
+                value={convertTemp(currentReading.temperature)}
+                unit={tempUnit}
                 icon={<Wind className="w-6 h-6 text-red-600" />}
                 color="text-red-600"
                 secondaryColor="bg-red-50 dark:bg-red-950/30"
@@ -143,7 +174,7 @@ const Index = () => {
             </div>
 
             <div className="grid grid-cols-1">
-              <WeatherChart data={readings || []} />
+              <WeatherChart data={readings || []} units={units} />
             </div>
 
             {/* Footer info */}
