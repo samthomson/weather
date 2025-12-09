@@ -48,6 +48,11 @@ const Index = () => {
 
   const currentReading = readings?.[0];
 
+  // Filter data for last hour
+  const now = Math.floor(Date.now() / 1000);
+  const oneHourAgo = now - 3600; // 1 hour in seconds
+  const lastHourReadings = readings?.filter(r => r.timestamp >= oneHourAgo) || [];
+
   // Convert temperature
   const convertTemp = (celsius: number) => {
     if (units === 'imperial') {
@@ -201,7 +206,7 @@ const Index = () => {
               />
             </div>
 
-            {/* Historical data chart */}
+            {/* Historical data charts */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Wind className="w-5 h-5 text-slate-600 dark:text-slate-400" />
@@ -211,8 +216,17 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1">
-              <WeatherChart data={readings || []} units={units} />
+            <div className="space-y-6">
+              <WeatherChart
+                data={lastHourReadings}
+                units={units}
+                title="Last Hour"
+              />
+              <WeatherChart
+                data={readings || []}
+                units={units}
+                title="Last 24 Hours"
+              />
             </div>
 
             {/* Footer info */}

@@ -37,15 +37,19 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
     queryFn: async (c) => {
       try {
         const relay = nostr.relay(relayUrl);
-        const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+        const signal = AbortSignal.any([c.signal, AbortSignal.timeout(5000)]);
 
-        // Query kind 8765 events from the specific author, limit to 100
+        // Get events from the last 24 hours
+        const now = Math.floor(Date.now() / 1000);
+        const oneDayAgo = now - 86400; // 24 hours in seconds
+
+        // Query kind 8765 events from the specific author in the last 24 hours
         const events = await relay.query(
           [
             {
               kinds: [8765],
               authors: [authorPubkey],
-              limit: 100,
+              since: oneDayAgo,
             },
           ],
           { signal }

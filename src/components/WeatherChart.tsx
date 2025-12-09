@@ -27,9 +27,10 @@ ChartJS.register(
 interface WeatherChartProps {
   data: WeatherReading[];
   units?: 'metric' | 'imperial';
+  title: string;
 }
 
-export function WeatherChart({ data, units = 'metric' }: WeatherChartProps) {
+export function WeatherChart({ data, units = 'metric', title }: WeatherChartProps) {
   if (data.length === 0) {
     return (
       <Card className="col-span-full border-dashed">
@@ -117,6 +118,8 @@ export function WeatherChart({ data, units = 'metric' }: WeatherChartProps) {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 2.5,
     interaction: {
       mode: 'index' as const,
       intersect: false,
@@ -184,12 +187,12 @@ export function WeatherChart({ data, units = 'metric' }: WeatherChartProps) {
   };
 
   return (
-    <Card className="col-span-full border-0 shadow-lg">
+    <Card className="border-0 shadow-lg">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg">Historical Data</CardTitle>
+        <CardTitle className="text-lg">{title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
-        <div className="h-96">
+        <div className="w-full">
           <Line data={chartData} options={options} />
         </div>
       </CardContent>
