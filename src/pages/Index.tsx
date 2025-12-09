@@ -5,6 +5,7 @@ import { WeatherGauge } from '@/components/WeatherGauge';
 import { WeatherChart } from '@/components/WeatherChart';
 import { Card, CardContent } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
@@ -48,10 +49,13 @@ const Index = () => {
 
   const currentReading = readings?.[0];
 
-  // Filter data for last hour
-  const now = Math.floor(Date.now() / 1000);
-  const oneHourAgo = now - 3600; // 1 hour in seconds
-  const lastHourReadings = readings?.filter(r => r.timestamp >= oneHourAgo) || [];
+  // Filter data for last hour - recalculate on each render to ensure accuracy
+  const lastHourReadings = React.useMemo(() => {
+    if (!readings) return [];
+    const now = Math.floor(Date.now() / 1000);
+    const oneHourAgo = now - 3600; // 1 hour in seconds
+    return readings.filter(r => r.timestamp >= oneHourAgo);
+  }, [readings]);
 
   // Convert temperature
   const convertTemp = (celsius: number) => {
