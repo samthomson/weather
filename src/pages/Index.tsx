@@ -129,7 +129,14 @@ const Index = () => {
                 </h2>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Last updated: {new Date(currentReading.timestamp * 1000).toLocaleString()}
+                Last updated: {new Date(currentReading.timestamp * 1000).toLocaleString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
+                })}
               </p>
             </div>
 
