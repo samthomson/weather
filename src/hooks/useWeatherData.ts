@@ -37,19 +37,19 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
     queryFn: async (c) => {
       try {
         const relay = nostr.relay(relayUrl);
-        const signal = AbortSignal.any([c.signal, AbortSignal.timeout(10000)]);
+        const signal = AbortSignal.any([c.signal, AbortSignal.timeout(15000)]);
 
         const now = Math.floor(Date.now() / 1000);
 
-        // Create time windows - sample every 5 minutes for 24 hours = 288 queries
-        // This is more efficient than getting thousands of events every 30 seconds
+        // Sample every 10 minutes for 24 hours = 144 queries
+        // This balances detail with performance
         const queries = [];
-        const fiveMinutes = 300; // 5 minutes in seconds
+        const tenMinutes = 600; // 10 minutes in seconds
 
-        // Get one reading per 5-minute interval over the last 24 hours
-        for (let i = 0; i < 288; i++) {
-          const windowEnd = now - (i * fiveMinutes);
-          const windowStart = windowEnd - fiveMinutes;
+        // Get one reading per 10-minute interval over the last 24 hours
+        for (let i = 0; i < 144; i++) {
+          const windowEnd = now - (i * tenMinutes);
+          const windowStart = windowEnd - tenMinutes;
 
           queries.push({
             kinds: [8765],
