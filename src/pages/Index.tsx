@@ -98,12 +98,22 @@ const Index = () => {
               </p>
             </div>
             <Select value={units} onValueChange={(value: 'metric' | 'imperial') => setUnits(value)}>
-              <SelectTrigger className="w-36">
+              <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="metric">🥖 Metric</SelectItem>
-                <SelectItem value="imperial">🍔 Imperial</SelectItem>
+                <SelectItem value="metric">
+                  <span className="flex items-center gap-2">
+                    <span>🥖</span>
+                    <span>Metric</span>
+                  </span>
+                </SelectItem>
+                <SelectItem value="imperial">
+                  <span className="flex items-center gap-2">
+                    <span>🍔</span>
+                    <span>Imperial</span>
+                  </span>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
