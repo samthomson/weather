@@ -37,38 +37,51 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
     queryFn: async (c) => {
       try {
         const relay = nostr.relay(relayUrl);
-        const signal = AbortSignal.any([c.signal, AbortSignal.timeout(5000)]);
+        const signal = AbortSignal.any([c.signal, AbortSignal.timeout(10000)]);
 
-        // Get events from the last 24 hours
         const now = Math.floor(Date.now() / 1000);
-        const oneDayAgo = now - 86400; // 24 hours in seconds
 
-        // Query kind 8765 events from the specific author in the last 24 hours
-        const events = await relay.query(
-          [
-            {
-              kinds: [8765],
-              authors: [authorPubkey],
-              since: oneDayAgo,
-            },
-          ],
-          { signal }
-        );
+        // Create time windows - sample every 5 minutes for 24 hours = 288 queries
+        // This is more efficient than getting thousands of events every 30 seconds
+        const queries = [];
+        const fiveMinutes = 300; // 5 minutes in seconds
+
+        // Get one reading per 5-minute interval over the last 24 hours
+        for (let i = 0; i < 288; i++) {
+          const windowEnd = now - (i * fiveMinutes);
+          const windowStart = windowEnd - fiveMinutes;
+
+          queries.push({
+            kinds: [8765],
+            authors: [authorPubkey],
+            since: windowStart,
+            until: windowEnd,
+            limit: 1,
+          });
+        }
+
+        // Query all time windows in one request
+        const events = await relay.query(queries, { signal });
 
         // Sort by timestamp descending (most recent first)
         const sorted = events.sort((a, b) => b.created_at - a.created_at);
 
-        // Parse all events
+        // Parse all events and remove duplicates
         const readings: WeatherReading[] = [];
+        const seenTimestamps = new Set<number>();
+
         for (const event of sorted) {
-          const parsed = parseWeatherContent(event.content);
-          if (parsed) {
-            readings.push({
-              temperature: parsed.temperature!,
-              humidity: parsed.humidity!,
-              pm25: parsed.pm25!,
-              timestamp: event.created_at,
-            });
+          if (!seenTimestamps.has(event.created_at)) {
+            const parsed = parseWeatherContent(event.content);
+            if (parsed) {
+              readings.push({
+                temperature: parsed.temperature!,
+                humidity: parsed.humidity!,
+                pm25: parsed.pm25!,
+                timestamp: event.created_at,
+              });
+              seenTimestamps.add(event.created_at);
+            }
           }
         }
 
