@@ -118,8 +118,7 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
 
   const options = {
     responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 2.5,
+    maintainAspectRatio: false,
     interaction: {
       mode: 'index' as const,
       intersect: false,
@@ -187,12 +186,12 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
   };
 
   return (
-    <Card className="border-0 shadow-lg">
+    <Card className="border-0 shadow-lg w-full">
       <CardHeader className="pb-4">
         <CardTitle className="text-lg">{title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
-        <div className="w-full">
+        <div className="w-full h-80">
           <Line data={chartData} options={options} />
         </div>
       </CardContent>
