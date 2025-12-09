@@ -240,11 +240,29 @@ const Index = () => {
             </div>
 
             {/* Footer info */}
-            <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-4">
-              <p>Data sourced from Nostr relay · Kind 8765 · {readings?.length || 0} readings</p>
-              <a href="https://shakespeare.diy" className="text-blue-600 dark:text-blue-400 hover:underline mt-2 inline-block">
-                Vibed with Shakespeare
-              </a>
+            <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-4 space-y-1">
+              <p>
+                Data from{' '}
+                <a href="wss://relay.samt.st" className="text-blue-600 dark:text-blue-400 hover:underline">
+                  wss://relay.samt.st
+                </a>
+                {' · '}Kind 8765
+              </p>
+              <p>
+                Made by{' '}
+                <a
+                  href="https://nostr.band/npub1yzfm42rzr3dj2h50flpvdl0uzrv22kv2y4ghve804w5xqu6lzqcqkyfxu5"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  npub1yzfm...kyfxu5
+                </a>
+                {' · '}
+                <a href="https://shakespeare.diy" className="text-blue-600 dark:text-blue-400 hover:underline">
+                  Vibed with Shakespeare
+                </a>
+              </p>
             </div>
           </div>
         )}
