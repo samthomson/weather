@@ -49,6 +49,25 @@ const Index = () => {
   const tempUnit = units === 'imperial' ? '°F' : '°C';
   const tempLabel = units === 'imperial' ? 'Temperature (°F)' : 'Temperature (°C)';
 
+  // Calculate relative time
+  const getRelativeTime = (timestamp: number) => {
+    const now = Date.now();
+    const diff = Math.floor((now - timestamp * 1000) / 1000); // difference in seconds
+
+    if (diff < 60) {
+      return `${diff} second${diff !== 1 ? 's' : ''} ago`;
+    } else if (diff < 3600) {
+      const minutes = Math.floor(diff / 60);
+      return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    } else if (diff < 86400) {
+      const hours = Math.floor(diff / 3600);
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    } else {
+      const days = Math.floor(diff / 86400);
+      return `${days} day${days !== 1 ? 's' : ''} ago`;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
@@ -129,14 +148,16 @@ const Index = () => {
                 </h2>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Last updated: {new Date(currentReading.timestamp * 1000).toLocaleString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  hour12: true
-                })}
+                Last updated: <span className="font-semibold text-slate-900 dark:text-slate-100">
+                  {new Date(currentReading.timestamp * 1000).toLocaleString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  })}
+                </span> ({getRelativeTime(currentReading.timestamp)})
               </p>
             </div>
 
