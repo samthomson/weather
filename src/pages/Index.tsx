@@ -235,9 +235,10 @@ const Index = () => {
                 label="PM2.5"
                 value={currentReading.pm25}
                 unit="µg/m³"
-                icon={<Cloud className="w-6 h-6 text-purple-600" />}
+                icon={<Cloud className="w-6 h-6" />}
                 color="text-purple-600"
                 secondaryColor="bg-purple-50 dark:bg-purple-950/30"
+                showAirQualityScale={true}
               />
             </div>
 
