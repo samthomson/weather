@@ -246,7 +246,7 @@ const Index = () => {
                 <a href="wss://relay.samt.st" className="text-blue-600 dark:text-blue-400 hover:underline">
                   wss://relay.samt.st
                 </a>
-                {' · '}Kind 8765
+                {' · '}Kind 8765 (WIP)
               </p>
               <p>
                 Made by{' '}
