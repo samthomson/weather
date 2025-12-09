@@ -59,8 +59,18 @@ const Index = () => {
     // Last hour: all recent detailed readings
     const lastHour = readings.filter(r => r.timestamp >= oneHourAgo);
 
-    // Last 24 hours: only readings OLDER than 1 hour (the hourly samples)
-    const last24Hour = readings.filter(r => r.timestamp < oneHourAgo);
+    // Last 24 hours: one sample per hour
+    // Include the most recent reading (now) + the 23 hourly samples
+    const last24Hour = [];
+
+    // Add the most recent reading as the first point
+    if (readings.length > 0) {
+      last24Hour.push(readings[0]);
+    }
+
+    // Add the hourly samples (older than 1 hour)
+    const hourlySamples = readings.filter(r => r.timestamp < oneHourAgo);
+    last24Hour.push(...hourlySamples);
 
     return {
       lastHourReadings: lastHour,
