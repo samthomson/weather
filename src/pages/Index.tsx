@@ -4,7 +4,7 @@ import { useWeatherData } from '@/hooks/useWeatherData';
 import { WeatherGauge } from '@/components/WeatherGauge';
 import { WeatherChart } from '@/components/WeatherChart';
 import { Card, CardContent } from '@/components/ui/card';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
@@ -26,6 +26,7 @@ const Index = () => {
 
   const { data: readings, isLoading, error, refetch } = useWeatherData(RELAY_URL, AUTHOR_PUBKEY);
   const [units, setUnits] = useLocalStorage<'metric' | 'imperial'>('weather:units', 'metric');
+  const [, setTick] = useState(0);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -35,6 +36,15 @@ const Index = () => {
 
     return () => clearInterval(interval);
   }, [refetch]);
+
+  // Update relative time every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const currentReading = readings?.[0];
 
