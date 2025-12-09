@@ -42,9 +42,18 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
         const now = Math.floor(Date.now() / 1000);
         const oneHour = 3600; // 1 hour in seconds
 
-        // Get one reading per hour for the last 24 hours (24 queries total)
         const queries = [];
-        for (let i = 0; i < 24; i++) {
+
+        // First, get all events from the last hour for detailed recent data
+        queries.push({
+          kinds: [8765],
+          authors: [authorPubkey],
+          since: now - oneHour,
+          limit: 200, // Get plenty of recent readings
+        });
+
+        // Then get one reading per hour for hours 1-24 (23 queries)
+        for (let i = 1; i < 24; i++) {
           const windowEnd = now - (i * oneHour);
           const windowStart = windowEnd - oneHour;
 
@@ -57,23 +66,28 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
           });
         }
 
-        // Single request with 24 filters - relay processes them together
+        // Single request with all filters - relay processes them together
         const events = await relay.query(queries, { signal });
 
         // Sort by timestamp descending (most recent first)
         const sorted = events.sort((a, b) => b.created_at - a.created_at);
 
-        // Parse all events
+        // Parse all events and deduplicate
         const readings: WeatherReading[] = [];
+        const seenTimestamps = new Set<number>();
+
         for (const event of sorted) {
-          const parsed = parseWeatherContent(event.content);
-          if (parsed) {
-            readings.push({
-              temperature: parsed.temperature!,
-              humidity: parsed.humidity!,
-              pm25: parsed.pm25!,
-              timestamp: event.created_at,
-            });
+          if (!seenTimestamps.has(event.created_at)) {
+            const parsed = parseWeatherContent(event.content);
+            if (parsed) {
+              readings.push({
+                temperature: parsed.temperature!,
+                humidity: parsed.humidity!,
+                pm25: parsed.pm25!,
+                timestamp: event.created_at,
+              });
+              seenTimestamps.add(event.created_at);
+            }
           }
         }
 
