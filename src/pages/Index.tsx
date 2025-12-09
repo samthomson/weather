@@ -4,8 +4,7 @@ import { useWeatherData } from '@/hooks/useWeatherData';
 import { WeatherGauge } from '@/components/WeatherGauge';
 import { WeatherChart } from '@/components/WeatherChart';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const RELAY_URL = 'wss://relay.samt.st';
@@ -18,18 +17,15 @@ const Index = () => {
   });
 
   const { data: readings, isLoading, error, refetch } = useWeatherData(RELAY_URL, AUTHOR_PUBKEY);
-  const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
-    if (!autoRefresh) return;
-
     const interval = setInterval(() => {
       refetch();
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, refetch]);
+  }, [refetch]);
 
   const currentReading = readings?.[0];
 
@@ -38,26 +34,13 @@ const Index = () => {
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
-                Weather Station
-              </h1>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Real-time environmental monitoring from Nostr relay
-              </p>
-            </div>
-            <Button
-              onClick={() => {
-                setAutoRefresh(!autoRefresh);
-                refetch();
-              }}
-              variant={autoRefresh ? 'default' : 'outline'}
-              size="sm"
-              className="whitespace-nowrap"
-            >
-              {autoRefresh ? '🔄 Auto-refresh' : '🔄 Refresh'}
-            </Button>
+          <div className="space-y-1">
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
+              Weather Station
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Real-time environmental monitoring from Nostr relay
+            </p>
           </div>
         </div>
       </div>
