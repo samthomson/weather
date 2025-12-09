@@ -98,12 +98,12 @@ const Index = () => {
               </p>
             </div>
             <Select value={units} onValueChange={(value: 'metric' | 'imperial') => setUnits(value)}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-36">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="metric">Metric</SelectItem>
-                <SelectItem value="imperial">Imperial</SelectItem>
+                <SelectItem value="metric">🥖 Metric</SelectItem>
+                <SelectItem value="imperial">🍔 Imperial</SelectItem>
               </SelectContent>
             </Select>
           </div>
