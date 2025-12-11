@@ -6,6 +6,17 @@ export interface WeatherReading {
   humidity: number; // Percentage
   pm25: number; // µg/m³
   timestamp: number; // Unix timestamp
+  eventId?: string; // Nostr event ID
+  rawContent?: string; // Raw event content
+}
+
+export interface FlaggedReading {
+  sensor: 'PM2.5' | 'Temperature' | 'Humidity';
+  value: number;
+  timestamp: number;
+  eventId: string;
+  rawContent: string;
+  reason: string;
 }
 
 function parseWeatherContent(content: string): Partial<WeatherReading> | null {
@@ -32,7 +43,7 @@ function parseWeatherContent(content: string): Partial<WeatherReading> | null {
 export function useWeatherData(relayUrl: string, authorPubkey: string) {
   const { nostr } = useNostr();
 
-  return useQuery({
+  return useQuery<{ readings: WeatherReading[]; flaggedReadings: FlaggedReading[] }>({
     queryKey: ['weatherData', relayUrl, authorPubkey],
     queryFn: async (c) => {
       try {
@@ -74,24 +85,49 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
 
         // Parse all events and deduplicate
         const readings: WeatherReading[] = [];
+        const flaggedReadings: FlaggedReading[] = [];
         const seenTimestamps = new Set<number>();
 
         for (const event of sorted) {
           if (!seenTimestamps.has(event.created_at)) {
             const parsed = parseWeatherContent(event.content);
             if (parsed) {
-              readings.push({
-                temperature: parsed.temperature!,
-                humidity: parsed.humidity!,
-                pm25: parsed.pm25!,
-                timestamp: event.created_at,
-              });
+              // Check for erroneous PM2.5 values
+              if (parsed.pm25! > 200) {
+                flaggedReadings.push({
+                  sensor: 'PM2.5',
+                  value: parsed.pm25!,
+                  timestamp: event.created_at,
+                  eventId: event.id,
+                  rawContent: event.content,
+                  reason: 'Value exceeds maximum threshold (200 µg/m³)',
+                });
+
+                // Add reading with null PM2.5 to create gap in chart
+                readings.push({
+                  temperature: parsed.temperature!,
+                  humidity: parsed.humidity!,
+                  pm25: 0, // Will be treated as null in charts
+                  timestamp: event.created_at,
+                  eventId: event.id,
+                  rawContent: event.content,
+                });
+              } else {
+                readings.push({
+                  temperature: parsed.temperature!,
+                  humidity: parsed.humidity!,
+                  pm25: parsed.pm25!,
+                  timestamp: event.created_at,
+                  eventId: event.id,
+                  rawContent: event.content,
+                });
+              }
               seenTimestamps.add(event.created_at);
             }
           }
         }
 
-        return readings;
+        return { readings, flaggedReadings };
       } catch (error) {
         console.error('Error fetching weather data:', error);
         throw error;

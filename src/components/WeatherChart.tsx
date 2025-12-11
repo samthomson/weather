@@ -94,7 +94,8 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
 
     pm25Data = timeSlots.map(ts => {
       const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
-      return reading ? reading.pm25 : null;
+      // Treat 0 as null (filtered erroneous value)
+      return reading ? (reading.pm25 === 0 ? null : reading.pm25) : null;
     });
   } else {
     // For last hour chart: use all data points as-is
@@ -111,7 +112,8 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
 
     temperatureData = reversedData.map((r) => convertTemp(r.temperature));
     humidityData = reversedData.map((r) => r.humidity);
-    pm25Data = reversedData.map((r) => r.pm25);
+    // Treat 0 as null (filtered erroneous value)
+    pm25Data = reversedData.map((r) => r.pm25 === 0 ? null : r.pm25);
   }
 
   const chartData = {

@@ -1,5 +1,5 @@
 import { useSeoMeta } from '@unhead/react';
-import { Cloud, Droplets, Wind } from 'lucide-react';
+import { AlertTriangle, Cloud, Droplets, Wind } from 'lucide-react';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { WeatherGauge } from '@/components/WeatherGauge';
 import { WeatherChart } from '@/components/WeatherChart';
@@ -14,6 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const RELAY_URL = 'wss://relay.samt.st';
@@ -25,7 +33,9 @@ const Index = () => {
     description: 'Real-time weather monitoring from Nostr relay',
   });
 
-  const { data: readings, isLoading, error, refetch } = useWeatherData(RELAY_URL, AUTHOR_PUBKEY);
+  const { data, isLoading, error, refetch } = useWeatherData(RELAY_URL, AUTHOR_PUBKEY);
+  const readings = data?.readings;
+  const flaggedReadings = data?.flaggedReadings || [];
   const [units, setUnits] = useLocalStorage<'metric' | 'imperial'>('weather:units', 'metric');
   const [, setTick] = useState(0);
 
@@ -252,6 +262,61 @@ const Index = () => {
                 title="Last 24 Hours"
               />
             </div>
+
+            {/* Flagged Data Section */}
+            {flaggedReadings.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Flagged Data
+                  </h2>
+                </div>
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Timestamp</TableHead>
+                          <TableHead>Sensor</TableHead>
+                          <TableHead>Value</TableHead>
+                          <TableHead>Reason</TableHead>
+                          <TableHead>Event ID</TableHead>
+                          <TableHead>Raw Content</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {flaggedReadings.map((flagged, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-mono text-xs">
+                              {new Date(flagged.timestamp * 1000).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </TableCell>
+                            <TableCell className="font-semibold">{flagged.sensor}</TableCell>
+                            <TableCell className="text-orange-600 dark:text-orange-400 font-bold">
+                              {flagged.value} µg/m³
+                            </TableCell>
+                            <TableCell className="text-xs text-slate-600 dark:text-slate-400">
+                              {flagged.reason}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">
+                              {flagged.eventId.substring(0, 8)}...
+                            </TableCell>
+                            <TableCell className="font-mono text-xs max-w-xs truncate">
+                              {flagged.rawContent}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* Footer info */}
             <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-4 space-y-1">
