@@ -51,7 +51,7 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
 
   const tempUnit = units === 'imperial' ? '°F' : '°C';
 
-  // Check if this is the 24-hour chart (has fewer data points, likely hourly samples)
+  // Check if this is the 24-hour chart
   const is24HourChart = title === 'Last 24 Hours';
 
   let labels: string[];
@@ -59,12 +59,12 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
   let humidityData: (number | null)[];
   let pm25Data: (number | null)[];
 
-  if (is24HourChart && data.length < 50) {
-    // For 24-hour chart: create a complete timeline with gaps for missing data
+  if (is24HourChart) {
+    // For 24-hour chart: create exactly 24 hourly time slots
     const now = Math.floor(Date.now() / 1000);
     const oneHour = 3600;
 
-    // Create 24 hourly time slots
+    // Create 24 hourly time slots from 23 hours ago to now
     const timeSlots: number[] = [];
     for (let i = 23; i >= 0; i--) {
       timeSlots.push(now - (i * oneHour));

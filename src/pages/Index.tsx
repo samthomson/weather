@@ -49,21 +49,20 @@ const Index = () => {
 
   const currentReading = readings?.[0];
 
-  // Split data: last hour (detailed) vs 24 hour (hourly samples)
+  // Split data: last hour (detailed) vs 24 hour (all readings for matching)
   const { lastHourReadings, last24HourReadings } = React.useMemo(() => {
     if (!readings) return { lastHourReadings: [], last24HourReadings: [] };
 
     const now = Math.floor(Date.now() / 1000);
     const oneHourAgo = now - 3600; // 1 hour in seconds
 
-    // Last hour: all recent detailed readings
+    // Last hour: detailed readings from past hour
     const lastHour = readings.filter(r => r.timestamp >= oneHourAgo);
 
-    // Last 24 hours: all readings (hourly samples from hours ago + recent data)
-    // The chart component will handle showing this as hourly slots
+    // Last 24 hours: pass ALL readings - chart will match to hourly slots
     return {
       lastHourReadings: lastHour,
-      last24HourReadings: readings, // Use all readings
+      last24HourReadings: readings,
     };
   }, [readings]);
 
