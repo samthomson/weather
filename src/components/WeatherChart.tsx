@@ -41,19 +41,6 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
     );
   }
 
-  // Format timestamps for display (show last 24 hours or however many we have)
-  const labels = data
-    .slice()
-    .reverse()
-    .map((r) => {
-      const date = new Date(r.timestamp * 1000);
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      });
-    });
-
   // Convert temperature based on units
   const convertTemp = (celsius: number) => {
     if (units === 'imperial') {
@@ -62,11 +49,70 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
     return celsius;
   };
 
-  const temperatureData = data.slice().reverse().map((r) => convertTemp(r.temperature));
-  const humidityData = data.slice().reverse().map((r) => r.humidity);
-  const pm25Data = data.slice().reverse().map((r) => r.pm25);
-
   const tempUnit = units === 'imperial' ? '°F' : '°C';
+
+  // Check if this is the 24-hour chart (has fewer data points, likely hourly samples)
+  const is24HourChart = title === 'Last 24 Hours';
+
+  let labels: string[];
+  let temperatureData: (number | null)[];
+  let humidityData: (number | null)[];
+  let pm25Data: (number | null)[];
+
+  if (is24HourChart && data.length < 50) {
+    // For 24-hour chart: create a complete timeline with gaps for missing data
+    const now = Math.floor(Date.now() / 1000);
+    const oneHour = 3600;
+
+    // Create 24 hourly time slots
+    const timeSlots: number[] = [];
+    for (let i = 23; i >= 0; i--) {
+      timeSlots.push(now - (i * oneHour));
+    }
+
+    // Create labels
+    labels = timeSlots.map(ts => {
+      const date = new Date(ts * 1000);
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+    });
+
+    // Map data to time slots, using null for missing data
+    temperatureData = timeSlots.map(ts => {
+      // Find reading within ±30 minutes of this time slot
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
+      return reading ? convertTemp(reading.temperature) : null;
+    });
+
+    humidityData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
+      return reading ? reading.humidity : null;
+    });
+
+    pm25Data = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
+      return reading ? reading.pm25 : null;
+    });
+  } else {
+    // For last hour chart: use all data points as-is
+    const reversedData = data.slice().reverse();
+
+    labels = reversedData.map((r) => {
+      const date = new Date(r.timestamp * 1000);
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+    });
+
+    temperatureData = reversedData.map((r) => convertTemp(r.temperature));
+    humidityData = reversedData.map((r) => r.humidity);
+    pm25Data = reversedData.map((r) => r.pm25);
+  }
 
   const chartData = {
     labels,
@@ -84,6 +130,7 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
         pointHoverBorderWidth: 2,
         tension: 0.4,
         fill: false,
+        spanGaps: false, // Don't connect points across null values
       },
       {
         label: 'Humidity (%)',
@@ -98,6 +145,7 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
         pointHoverBorderWidth: 2,
         tension: 0.4,
         fill: false,
+        spanGaps: false, // Don't connect points across null values
       },
       {
         label: 'PM2.5 (µg/m³)',
@@ -112,6 +160,7 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
         pointHoverBorderWidth: 2,
         tension: 0.4,
         fill: false,
+        spanGaps: false, // Don't connect points across null values
       },
     ],
   };
