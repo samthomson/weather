@@ -87,41 +87,43 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
         const readings: WeatherReading[] = [];
         const flaggedReadings: FlaggedReading[] = [];
         const seenTimestamps = new Set<number>();
+        let previousPM25: number | null = null;
 
         for (const event of sorted) {
           if (!seenTimestamps.has(event.created_at)) {
             const parsed = parseWeatherContent(event.content);
             if (parsed) {
-              // Check for erroneous PM2.5 values
-              if (parsed.pm25! > 200) {
+              let pm25Value = parsed.pm25!;
+              let isFlagged = false;
+
+              // Check if PM2.5 is more than 5x the previous value
+              if (previousPM25 !== null && pm25Value > previousPM25 * 5) {
                 flaggedReadings.push({
                   sensor: 'PM2.5',
-                  value: parsed.pm25!,
+                  value: pm25Value,
                   timestamp: event.created_at,
                   eventId: event.id,
                   rawContent: event.content,
-                  reason: 'Value exceeds maximum threshold (200 µg/m³)',
+                  reason: `Value is ${(pm25Value / previousPM25).toFixed(1)}x previous reading (${previousPM25.toFixed(1)} µg/m³)`,
                 });
-
-                // Add reading with null PM2.5 to create gap in chart
-                readings.push({
-                  temperature: parsed.temperature!,
-                  humidity: parsed.humidity!,
-                  pm25: 0, // Will be treated as null in charts
-                  timestamp: event.created_at,
-                  eventId: event.id,
-                  rawContent: event.content,
-                });
-              } else {
-                readings.push({
-                  temperature: parsed.temperature!,
-                  humidity: parsed.humidity!,
-                  pm25: parsed.pm25!,
-                  timestamp: event.created_at,
-                  eventId: event.id,
-                  rawContent: event.content,
-                });
+                isFlagged = true;
+                pm25Value = 0; // Will be treated as null in charts
               }
+
+              readings.push({
+                temperature: parsed.temperature!,
+                humidity: parsed.humidity!,
+                pm25: pm25Value,
+                timestamp: event.created_at,
+                eventId: event.id,
+                rawContent: event.content,
+              });
+
+              // Update previous PM2.5 only if not flagged
+              if (!isFlagged) {
+                previousPM25 = parsed.pm25!;
+              }
+
               seenTimestamps.add(event.created_at);
             }
           }
