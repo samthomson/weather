@@ -26,6 +26,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const RELAY_URL = 'wss://relay.samt.st';
 const AUTHOR_PUBKEY = '55bb2db9b6b43291bc9ea64be226bf1dd0bbf60c71a7526c4f01ced3a2fc17f7';
+const EVENT_KIND = 4223;
 
 const Index = () => {
   useSeoMeta({
@@ -325,7 +326,7 @@ const Index = () => {
                 <a href="wss://relay.samt.st" className="text-blue-600 dark:text-blue-400 hover:underline">
                   wss://relay.samt.st
                 </a>
-                {' · '}Kind 8765 (WIP)
+                {' · '}Kind 4223
               </p>
               <p>
                 Made by{' '}

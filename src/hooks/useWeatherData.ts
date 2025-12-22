@@ -57,7 +57,7 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
 
         // First, get all events from the last hour for detailed recent data
         queries.push({
-          kinds: [8765],
+          kinds: [4223],
           authors: [authorPubkey],
           since: now - oneHour,
           limit: 200, // Get plenty of recent readings
@@ -69,7 +69,7 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
           const windowStart = windowEnd - oneHour;
 
           queries.push({
-            kinds: [8765],
+            kinds: [4223],
             authors: [authorPubkey],
             since: windowStart,
             until: windowEnd,

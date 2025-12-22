@@ -20,7 +20,7 @@ Check out the hardware and code: **[samthomson/weather-station](https://github.c
 ## Data Source
 
 - **Relay**: wss://relay.samt.st
-- **Kind**: 8765 (WIP - placeholder kind)
+- **Kind**: 4223
 - **Format**: `Weather: T=25.2C H=63.7% PM2.5=0`
 
 ## Tech Stack
