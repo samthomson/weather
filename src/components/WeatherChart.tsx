@@ -53,6 +53,7 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
 
   // Check if this is the 24-hour chart
   const is24HourChart = title === 'Last 24 Hours';
+  const isLastHourChart = title === 'Last Hour';
 
   let labels: string[];
   let temperatureData: (number | null)[];
@@ -97,8 +98,46 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
       // Treat 0 as null (filtered erroneous value)
       return reading ? (reading.pm25 === 0 ? null : reading.pm25) : null;
     });
+  } else if (isLastHourChart) {
+    // For last hour chart: create 5-minute interval time slots (12 slots for 1 hour)
+    const now = Math.floor(Date.now() / 1000);
+    const fiveMinutes = 300; // 5 minutes in seconds
+
+    // Create 12 time slots (5-minute intervals over 1 hour)
+    const timeSlots: number[] = [];
+    for (let i = 11; i >= 0; i--) {
+      timeSlots.push(now - (i * fiveMinutes));
+    }
+
+    // Create labels
+    labels = timeSlots.map(ts => {
+      const date = new Date(ts * 1000);
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+    });
+
+    // Map data to time slots, using null for missing data
+    temperatureData = timeSlots.map(ts => {
+      // Find reading within ±2.5 minutes of this time slot
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 150);
+      return reading ? convertTemp(reading.temperature) : null;
+    });
+
+    humidityData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 150);
+      return reading ? reading.humidity : null;
+    });
+
+    pm25Data = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 150);
+      // Treat 0 as null (filtered erroneous value)
+      return reading ? (reading.pm25 === 0 ? null : reading.pm25) : null;
+    });
   } else {
-    // For last hour chart: use all data points as-is
+    // Fallback: use all data points as-is
     const reversedData = data.slice().reverse();
 
     labels = reversedData.map((r) => {
