@@ -327,11 +327,11 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
   };
 
   return (
-    <Card className="border-0 shadow-lg w-full">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg">{title}</CardTitle>
+    <Card className="border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300 w-full">
+      <CardHeader className="pb-6 border-b border-slate-100 dark:border-slate-800">
+        <CardTitle className="text-xl font-bold text-slate-900 dark:text-slate-100">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
+      <CardContent className="pt-8">
         <div className="w-full h-80">
           <Line data={chartData} options={options} />
         </div>

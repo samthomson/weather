@@ -109,16 +109,21 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
-                {stationMetadata?.name || 'Weather Station'}
-              </h1>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
+                  <Cloud className="w-7 h-7 text-white" />
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
+                  {stationMetadata?.name || 'Weather Station'}
+                </h1>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400 ml-16">
                 {stationMetadata?.location ? (
                   <>Real-time monitoring · {stationMetadata.location}</>
                 ) : (
@@ -194,25 +199,24 @@ const Index = () => {
         ) : (
           <div className="space-y-8">
             {/* Current readings section */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Cloud className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                   Current Conditions
                 </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Last updated: <span className="font-semibold text-slate-900 dark:text-slate-100">
+                    {new Date(currentReading.timestamp * 1000).toLocaleString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </span> <span className="text-slate-500">({getRelativeTime(currentReading.timestamp)})</span>
+                </p>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Last updated: <span className="font-semibold text-slate-900 dark:text-slate-100">
-                  {new Date(currentReading.timestamp * 1000).toLocaleString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                  })}
-                </span> ({getRelativeTime(currentReading.timestamp)})
-              </p>
             </div>
 
             {/* Gauges grid */}
@@ -236,49 +240,49 @@ const Index = () => {
               />
 
               {/* Grouped PM sensors card */}
-              <Card className="overflow-hidden border-0 shadow-lg">
-                <CardContent className="p-6">
+              <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                <CardContent className="p-8">
                   <div className="space-y-6">
                     {/* Header */}
                     <div className="flex items-center justify-between">
-                      <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                      <div className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Air Quality
                       </div>
-                      <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/30">
+                      <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/30 shadow-sm">
                         <Cloud className="w-6 h-6 text-purple-600" />
                       </div>
                     </div>
 
                     {/* PM1 */}
-                    <div className="space-y-1">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">PM1.0</div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold text-purple-600">
+                    <div className="space-y-1 pb-4 border-b border-slate-100 dark:border-slate-800">
+                      <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM1.0</div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-3xl font-bold text-purple-600">
                           {currentReading.pm1.toFixed(1)}
                         </span>
-                        <span className="text-sm text-slate-500 dark:text-slate-400">µg/m³</span>
+                        <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
                       </div>
                     </div>
 
                     {/* PM2.5 */}
-                    <div className="space-y-1">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">PM2.5</div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold text-purple-600">
+                    <div className="space-y-1 pb-4 border-b border-slate-100 dark:border-slate-800">
+                      <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM2.5</div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-3xl font-bold text-purple-600">
                           {currentReading.pm25.toFixed(1)}
                         </span>
-                        <span className="text-sm text-slate-500 dark:text-slate-400">µg/m³</span>
+                        <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
                       </div>
                     </div>
 
                     {/* PM10 */}
                     <div className="space-y-1">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">PM10</div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold text-purple-600">
+                      <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM10</div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-3xl font-bold text-purple-600">
                           {currentReading.pm10.toFixed(1)}
                         </span>
-                        <span className="text-sm text-slate-500 dark:text-slate-400">µg/m³</span>
+                        <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
                       </div>
                     </div>
                   </div>
@@ -287,13 +291,10 @@ const Index = () => {
             </div>
 
             {/* Historical data charts */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Wind className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Trends
-                </h2>
-              </div>
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                Trends
+              </h2>
             </div>
 
             <div className="space-y-6">
@@ -311,14 +312,16 @@ const Index = () => {
 
             {/* Flagged Data Section */}
             {flaggedReadings.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-950/30">
+                    <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                     Flagged Data
                   </h2>
                 </div>
-                <Card className="border-0 shadow-lg">
+                <Card className="border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
                   <CardContent className="p-6">
                     <Table>
                       <TableHeader>

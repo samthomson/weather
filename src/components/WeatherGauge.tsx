@@ -64,25 +64,25 @@ export function WeatherGauge({
   const displayBgColor = airQuality ? airQuality.bgColor : secondaryColor;
 
   return (
-    <Card className="overflow-hidden border-0 shadow-lg">
-      <CardContent className="p-6">
-        <div className="space-y-4">
+    <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+      <CardContent className="p-8">
+        <div className="space-y-6">
           {/* Header with icon and label */}
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
+            <div className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {label}
             </div>
-            <div className={`p-2 rounded-lg ${displayBgColor}`}>
+            <div className={`p-3 rounded-xl ${displayBgColor} shadow-sm`}>
               {icon}
             </div>
           </div>
 
           {/* Large value display */}
-          <div className="flex items-baseline gap-1.5">
-            <span className={`text-5xl font-bold ${displayColor}`}>
+          <div className="flex items-baseline gap-2">
+            <span className={`text-6xl font-bold ${displayColor}`}>
               {value.toFixed(1)}
             </span>
-            <span className="text-xl font-medium text-slate-500 dark:text-slate-400">
+            <span className="text-2xl font-semibold text-slate-400 dark:text-slate-500">
               {unit}
             </span>
           </div>
