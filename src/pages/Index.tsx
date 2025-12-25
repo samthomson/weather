@@ -1,6 +1,7 @@
 import { useSeoMeta } from '@unhead/react';
 import { AlertTriangle, Cloud, Droplets, Wind } from 'lucide-react';
 import { useWeatherData } from '@/hooks/useWeatherData';
+import { useWeatherStations } from '@/hooks/useWeatherStations';
 import { WeatherGauge } from '@/components/WeatherGauge';
 import { WeatherChart } from '@/components/WeatherChart';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,8 +26,6 @@ import {
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const RELAY_URL = 'wss://relay.samt.st';
-const AUTHOR_PUBKEY = '55bb2db9b6b43291bc9ea64be226bf1dd0bbf60c71a7526c4f01ced3a2fc17f7';
-const EVENT_KIND = 4223;
 
 const Index = () => {
   useSeoMeta({
@@ -34,7 +33,16 @@ const Index = () => {
     description: 'Real-time weather monitoring from Nostr relay',
   });
 
-  const { data, isLoading, error, refetch } = useWeatherData(RELAY_URL, AUTHOR_PUBKEY);
+  const { data: stations, isLoading: stationsLoading } = useWeatherStations(RELAY_URL);
+  const [selectedStation, setSelectedStation] = useLocalStorage<string | null>('weather:selected-station', null);
+
+  // Auto-select first station if none selected
+  const activeStationPubkey = selectedStation || stations?.[0]?.pubkey || null;
+
+  const { data, isLoading, error, refetch } = useWeatherData(
+    RELAY_URL,
+    activeStationPubkey || ''
+  );
   const readings = data?.readings;
   const flaggedReadings = data?.flaggedReadings || [];
   const stationMetadata = data?.stationMetadata;
@@ -120,37 +128,68 @@ const Index = () => {
                   <Cloud className="w-7 h-7 text-white" />
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
-                  {stationMetadata?.name || 'Weather Station'}
+                  Weather Stations
                 </h1>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 ml-16">
-                {stationMetadata?.location ? (
-                  <>Real-time monitoring · {stationMetadata.location}</>
-                ) : (
-                  'Real-time environmental monitoring from Nostr relay'
-                )}
+                Real-time environmental monitoring from Nostr relay
               </p>
             </div>
-            <Select value={units} onValueChange={(value: 'metric' | 'imperial') => setUnits(value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="metric">
-                  <span className="flex items-center gap-2">
-                    <span>🥖</span>
-                    <span>Metric</span>
-                  </span>
-                </SelectItem>
-                <SelectItem value="imperial">
-                  <span className="flex items-center gap-2">
-                    <span>🍔</span>
-                    <span>Imperial</span>
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-3">
+              {/* Station selector */}
+              {stations && stations.length > 1 && (
+                <Select
+                  value={activeStationPubkey || undefined}
+                  onValueChange={(value) => setSelectedStation(value)}
+                >
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select station..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stations.map((station) => (
+                      <SelectItem key={station.pubkey} value={station.pubkey}>
+                        {station.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {/* Units selector */}
+              <Select value={units} onValueChange={(value: 'metric' | 'imperial') => setUnits(value)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="metric">
+                    <span className="flex items-center gap-2">
+                      <span>🥖</span>
+                      <span>Metric</span>
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="imperial">
+                    <span className="flex items-center gap-2">
+                      <span>🍔</span>
+                      <span>Imperial</span>
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
+          {/* Station info bar */}
+          {stationMetadata && (
+            <div className="mt-4 ml-16 text-sm text-slate-600 dark:text-slate-400">
+              <span className="font-semibold">{stationMetadata.name || 'Unknown Station'}</span>
+              {stationMetadata.location && (
+                <> · 📍 {stationMetadata.location}</>
+              )}
+              {stationMetadata.elevation && (
+                <> · ⛰️ {stationMetadata.elevation}m</>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
