@@ -99,14 +99,14 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
       return reading ? (reading.pm25 === 0 ? null : reading.pm25) : null;
     });
   } else if (isLastHourChart) {
-    // For last hour chart: create 5-minute interval time slots (12 slots for 1 hour)
+    // For last hour chart: create 1-minute interval time slots (60 slots for 1 hour)
     const now = Math.floor(Date.now() / 1000);
-    const fiveMinutes = 300; // 5 minutes in seconds
+    const oneMinute = 60; // 1 minute in seconds
 
-    // Create 12 time slots (5-minute intervals over 1 hour)
+    // Create 60 time slots (1-minute intervals over 1 hour)
     const timeSlots: number[] = [];
-    for (let i = 11; i >= 0; i--) {
-      timeSlots.push(now - (i * fiveMinutes));
+    for (let i = 59; i >= 0; i--) {
+      timeSlots.push(now - (i * oneMinute));
     }
 
     // Create labels
@@ -121,18 +121,18 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
 
     // Map data to time slots, using null for missing data
     temperatureData = timeSlots.map(ts => {
-      // Find reading within ±2.5 minutes of this time slot
-      const reading = data.find(r => Math.abs(r.timestamp - ts) < 150);
+      // Find reading within ±30 seconds of this time slot
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
       return reading ? convertTemp(reading.temperature) : null;
     });
 
     humidityData = timeSlots.map(ts => {
-      const reading = data.find(r => Math.abs(r.timestamp - ts) < 150);
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
       return reading ? reading.humidity : null;
     });
 
     pm25Data = timeSlots.map(ts => {
-      const reading = data.find(r => Math.abs(r.timestamp - ts) < 150);
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
       // Treat 0 as null (filtered erroneous value)
       return reading ? (reading.pm25 === 0 ? null : reading.pm25) : null;
     });
