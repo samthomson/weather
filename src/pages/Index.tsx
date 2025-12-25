@@ -216,7 +216,7 @@ const Index = () => {
             </div>
 
             {/* Gauges grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <WeatherGauge
                 label="Temperature"
                 value={convertTemp(currentReading.temperature)}
@@ -235,35 +235,55 @@ const Index = () => {
                 secondaryColor="bg-blue-50 dark:bg-blue-950/30"
               />
 
-              <WeatherGauge
-                label="PM1"
-                value={currentReading.pm1}
-                unit="µg/m³"
-                icon={<Cloud className="w-6 h-6" />}
-                color="text-purple-600"
-                secondaryColor="bg-purple-50 dark:bg-purple-950/30"
-                showAirQualityScale={true}
-              />
+              {/* Grouped PM sensors card */}
+              <Card className="overflow-hidden border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="space-y-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                        Air Quality
+                      </div>
+                      <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/30">
+                        <Cloud className="w-6 h-6 text-purple-600" />
+                      </div>
+                    </div>
 
-              <WeatherGauge
-                label="PM2.5"
-                value={currentReading.pm25}
-                unit="µg/m³"
-                icon={<Cloud className="w-6 h-6" />}
-                color="text-purple-600"
-                secondaryColor="bg-purple-50 dark:bg-purple-950/30"
-                showAirQualityScale={true}
-              />
+                    {/* PM1 */}
+                    <div className="space-y-1">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">PM1.0</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-purple-600">
+                          {currentReading.pm1.toFixed(1)}
+                        </span>
+                        <span className="text-sm text-slate-500 dark:text-slate-400">µg/m³</span>
+                      </div>
+                    </div>
 
-              <WeatherGauge
-                label="PM10"
-                value={currentReading.pm10}
-                unit="µg/m³"
-                icon={<Cloud className="w-6 h-6" />}
-                color="text-purple-600"
-                secondaryColor="bg-purple-50 dark:bg-purple-950/30"
-                showAirQualityScale={true}
-              />
+                    {/* PM2.5 */}
+                    <div className="space-y-1">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">PM2.5</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-purple-600">
+                          {currentReading.pm25.toFixed(1)}
+                        </span>
+                        <span className="text-sm text-slate-500 dark:text-slate-400">µg/m³</span>
+                      </div>
+                    </div>
+
+                    {/* PM10 */}
+                    <div className="space-y-1">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">PM10</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-purple-600">
+                          {currentReading.pm10.toFixed(1)}
+                        </span>
+                        <span className="text-sm text-slate-500 dark:text-slate-400">µg/m³</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Historical data charts */}
