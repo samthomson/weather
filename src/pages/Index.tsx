@@ -37,6 +37,7 @@ const Index = () => {
   const { data, isLoading, error, refetch } = useWeatherData(RELAY_URL, AUTHOR_PUBKEY);
   const readings = data?.readings;
   const flaggedReadings = data?.flaggedReadings || [];
+  const stationMetadata = data?.stationMetadata;
   const [units, setUnits] = useLocalStorage<'metric' | 'imperial'>('weather:units', 'metric');
   const [, setTick] = useState(0);
 
@@ -115,10 +116,14 @@ const Index = () => {
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
-                Weather Station
+                {stationMetadata?.name || 'Weather Station'}
               </h1>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Real-time environmental monitoring from Nostr relay
+                {stationMetadata?.location ? (
+                  <>Real-time monitoring · {stationMetadata.location}</>
+                ) : (
+                  'Real-time environmental monitoring from Nostr relay'
+                )}
               </p>
             </div>
             <Select value={units} onValueChange={(value: 'metric' | 'imperial') => setUnits(value)}>
@@ -283,7 +288,7 @@ const Index = () => {
                           <TableHead>Value</TableHead>
                           <TableHead>Reason</TableHead>
                           <TableHead>Event ID</TableHead>
-                          <TableHead>Raw Content</TableHead>
+                          <TableHead className="w-48">Full Event</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -307,8 +312,15 @@ const Index = () => {
                             <TableCell className="font-mono text-xs">
                               {flagged.eventId.substring(0, 8)}...
                             </TableCell>
-                            <TableCell className="font-mono text-xs max-w-xs truncate">
-                              {flagged.rawContent}
+                            <TableCell className="font-mono text-xs">
+                              <details className="cursor-pointer">
+                                <summary className="text-blue-600 dark:text-blue-400 hover:underline">
+                                  View JSON
+                                </summary>
+                                <pre className="mt-2 p-2 bg-slate-100 dark:bg-slate-800 rounded text-xs overflow-x-auto">
+                                  {flagged.rawEvent}
+                                </pre>
+                              </details>
                             </TableCell>
                           </TableRow>
                         ))}

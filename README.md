@@ -20,8 +20,9 @@ Check out the hardware and code: **[samthomson/weather-station](https://github.c
 ## Data Source
 
 - **Relay**: wss://relay.samt.st
-- **Kind**: 4223
-- **Format**: `Weather: T=25.2C H=63.7% PM2.5=0`
+- **Metadata Kind**: 16158 (station info)
+- **Readings Kind**: 4223 (sensor data)
+- **Format**: Tag-based (temp, humidity, pm25 tags)
 
 ## Tech Stack
 

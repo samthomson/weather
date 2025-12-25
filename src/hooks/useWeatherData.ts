@@ -7,7 +7,7 @@ export interface WeatherReading {
   pm25: number; // µg/m³
   timestamp: number; // Unix timestamp
   eventId?: string; // Nostr event ID
-  rawContent?: string; // Raw event content
+  rawEvent?: string; // Raw event JSON
 }
 
 export interface FlaggedReading {
@@ -15,35 +15,59 @@ export interface FlaggedReading {
   value: number;
   timestamp: number;
   eventId: string;
-  rawContent: string;
+  rawEvent: string;
   reason: string;
 }
 
-function parseWeatherContent(content: string): Partial<WeatherReading> | null {
-  try {
-    // Parse format: "Weather: T=25.2C H=63.7% PM2.5=0"
-    const tempMatch = content.match(/T=([\d.]+)C/);
-    const humidityMatch = content.match(/H=([\d.]+)%/);
-    const pm25Match = content.match(/PM2\.5=([\d.]+)/);
+export interface WeatherStationMetadata {
+  name?: string;
+  location?: string; // "lat,lon"
+  elevation?: number; // meters
+  sensors: string[];
+}
 
-    if (!tempMatch || !humidityMatch || !pm25Match) {
+function parseWeatherTags(tags: string[][]): Partial<WeatherReading> | null {
+  try {
+    const tempTag = tags.find(([name]) => name === 'temp');
+    const humidityTag = tags.find(([name]) => name === 'humidity');
+    const pm25Tag = tags.find(([name]) => name === 'pm25');
+
+    if (!tempTag || !humidityTag || !pm25Tag) {
       return null;
     }
 
     return {
-      temperature: parseFloat(tempMatch[1]),
-      humidity: parseFloat(humidityMatch[1]),
-      pm25: parseFloat(pm25Match[1]),
+      temperature: parseFloat(tempTag[1]),
+      humidity: parseFloat(humidityTag[1]),
+      pm25: parseFloat(pm25Tag[1]),
     };
   } catch {
     return null;
   }
 }
 
+function parseStationMetadata(tags: string[][]): WeatherStationMetadata {
+  const nameTag = tags.find(([name]) => name === 'name');
+  const locationTag = tags.find(([name]) => name === 'location');
+  const elevationTag = tags.find(([name]) => name === 'elevation');
+  const sensorTags = tags.filter(([name]) => name === 'sensor');
+
+  return {
+    name: nameTag?.[1],
+    location: locationTag?.[1],
+    elevation: elevationTag ? parseFloat(elevationTag[1]) : undefined,
+    sensors: sensorTags.map(([, sensor]) => sensor),
+  };
+}
+
 export function useWeatherData(relayUrl: string, authorPubkey: string) {
   const { nostr } = useNostr();
 
-  return useQuery<{ readings: WeatherReading[]; flaggedReadings: FlaggedReading[] }>({
+  return useQuery<{
+    readings: WeatherReading[];
+    flaggedReadings: FlaggedReading[];
+    stationMetadata?: WeatherStationMetadata;
+  }>({
     queryKey: ['weatherData', relayUrl, authorPubkey],
     queryFn: async (c) => {
       try {
@@ -54,6 +78,13 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
         const oneHour = 3600; // 1 hour in seconds
 
         const queries = [];
+
+        // Get station metadata (kind 16158 - replaceable)
+        queries.push({
+          kinds: [16158],
+          authors: [authorPubkey],
+          limit: 1,
+        });
 
         // First, get all events from the last hour for detailed recent data
         queries.push({
@@ -80,10 +111,20 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
         // Single request with all filters - relay processes them together
         const events = await relay.query(queries, { signal });
 
-        // Sort by timestamp descending (most recent first)
-        const sorted = events.sort((a, b) => b.created_at - a.created_at);
+        // Separate metadata and reading events
+        const metadataEvent = events.find(e => e.kind === 16158);
+        const readingEvents = events.filter(e => e.kind === 4223);
 
-        // Parse all events and deduplicate
+        // Parse station metadata
+        let stationMetadata: WeatherStationMetadata | undefined;
+        if (metadataEvent) {
+          stationMetadata = parseStationMetadata(metadataEvent.tags);
+        }
+
+        // Sort readings by timestamp descending (most recent first)
+        const sorted = readingEvents.sort((a, b) => b.created_at - a.created_at);
+
+        // Parse all reading events and deduplicate
         const readings: WeatherReading[] = [];
         const flaggedReadings: FlaggedReading[] = [];
         const seenTimestamps = new Set<number>();
@@ -91,7 +132,7 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
 
         for (const event of sorted) {
           if (!seenTimestamps.has(event.created_at)) {
-            const parsed = parseWeatherContent(event.content);
+            const parsed = parseWeatherTags(event.tags);
             if (parsed) {
               let pm25Value = parsed.pm25!;
               let isFlagged = false;
@@ -104,7 +145,7 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
                   value: pm25Value,
                   timestamp: event.created_at,
                   eventId: event.id,
-                  rawContent: event.content,
+                  rawEvent: JSON.stringify(event, null, 2),
                   reason: `Value is ${(pm25Value / previousPM25).toFixed(1)}x previous reading (${previousPM25.toFixed(1)} µg/m³)`,
                 });
                 isFlagged = true;
@@ -117,7 +158,7 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
                 pm25: pm25Value,
                 timestamp: event.created_at,
                 eventId: event.id,
-                rawContent: event.content,
+                rawEvent: JSON.stringify(event, null, 2),
               });
 
               // Update previous PM2.5 only if:
@@ -132,7 +173,7 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
           }
         }
 
-        return { readings, flaggedReadings };
+        return { readings, flaggedReadings, stationMetadata };
       } catch (error) {
         console.error('Error fetching weather data:', error);
         throw error;
