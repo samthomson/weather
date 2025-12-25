@@ -58,7 +58,9 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
   let labels: string[];
   let temperatureData: (number | null)[];
   let humidityData: (number | null)[];
+  let pm1Data: (number | null)[];
   let pm25Data: (number | null)[];
+  let pm10Data: (number | null)[];
 
   if (is24HourChart) {
     // For 24-hour chart: create exactly 24 hourly time slots
@@ -93,10 +95,19 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
       return reading ? reading.humidity : null;
     });
 
+    pm1Data = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
+      return reading ? (reading.pm1 === 0 ? null : reading.pm1) : null;
+    });
+
     pm25Data = timeSlots.map(ts => {
       const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
-      // Treat 0 as null (filtered erroneous value)
       return reading ? (reading.pm25 === 0 ? null : reading.pm25) : null;
+    });
+
+    pm10Data = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
+      return reading ? (reading.pm10 === 0 ? null : reading.pm10) : null;
     });
   } else if (isLastHourChart) {
     // For last hour chart: create 1-minute interval time slots (60 slots for 1 hour)
@@ -131,10 +142,19 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
       return reading ? reading.humidity : null;
     });
 
+    pm1Data = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
+      return reading ? (reading.pm1 === 0 ? null : reading.pm1) : null;
+    });
+
     pm25Data = timeSlots.map(ts => {
       const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
-      // Treat 0 as null (filtered erroneous value)
       return reading ? (reading.pm25 === 0 ? null : reading.pm25) : null;
+    });
+
+    pm10Data = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
+      return reading ? (reading.pm10 === 0 ? null : reading.pm10) : null;
     });
   } else {
     // Fallback: use all data points as-is
@@ -151,8 +171,9 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
 
     temperatureData = reversedData.map((r) => convertTemp(r.temperature));
     humidityData = reversedData.map((r) => r.humidity);
-    // Treat 0 as null (filtered erroneous value)
+    pm1Data = reversedData.map((r) => r.pm1 === 0 ? null : r.pm1);
     pm25Data = reversedData.map((r) => r.pm25 === 0 ? null : r.pm25);
+    pm10Data = reversedData.map((r) => r.pm10 === 0 ? null : r.pm10);
   }
 
   const chartData = {
@@ -189,6 +210,21 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
         spanGaps: false, // Don't connect points across null values
       },
       {
+        label: 'PM1 (µg/m³)',
+        data: pm1Data,
+        borderColor: 'rgb(139, 92, 246)',
+        backgroundColor: 'rgba(139, 92, 246, 0.05)',
+        borderWidth: 2.5,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: 'rgb(139, 92, 246)',
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+        tension: 0.4,
+        fill: false,
+        spanGaps: false,
+      },
+      {
         label: 'PM2.5 (µg/m³)',
         data: pm25Data,
         borderColor: 'rgb(168, 85, 247)',
@@ -201,7 +237,22 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
         pointHoverBorderWidth: 2,
         tension: 0.4,
         fill: false,
-        spanGaps: false, // Don't connect points across null values
+        spanGaps: false,
+      },
+      {
+        label: 'PM10 (µg/m³)',
+        data: pm10Data,
+        borderColor: 'rgb(192, 132, 252)',
+        backgroundColor: 'rgba(192, 132, 252, 0.05)',
+        borderWidth: 2.5,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: 'rgb(192, 132, 252)',
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+        tension: 0.4,
+        fill: false,
+        spanGaps: false,
       },
     ],
   };

@@ -216,7 +216,7 @@ const Index = () => {
             </div>
 
             {/* Gauges grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <WeatherGauge
                 label="Temperature"
                 value={convertTemp(currentReading.temperature)}
@@ -236,8 +236,28 @@ const Index = () => {
               />
 
               <WeatherGauge
+                label="PM1"
+                value={currentReading.pm1}
+                unit="µg/m³"
+                icon={<Cloud className="w-6 h-6" />}
+                color="text-purple-600"
+                secondaryColor="bg-purple-50 dark:bg-purple-950/30"
+                showAirQualityScale={true}
+              />
+
+              <WeatherGauge
                 label="PM2.5"
                 value={currentReading.pm25}
+                unit="µg/m³"
+                icon={<Cloud className="w-6 h-6" />}
+                color="text-purple-600"
+                secondaryColor="bg-purple-50 dark:bg-purple-950/30"
+                showAirQualityScale={true}
+              />
+
+              <WeatherGauge
+                label="PM10"
+                value={currentReading.pm10}
                 unit="µg/m³"
                 icon={<Cloud className="w-6 h-6" />}
                 color="text-purple-600"

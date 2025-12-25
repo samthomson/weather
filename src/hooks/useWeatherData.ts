@@ -4,14 +4,16 @@ import { useNostr } from '@nostrify/react';
 export interface WeatherReading {
   temperature: number; // Celsius
   humidity: number; // Percentage
+  pm1: number; // µg/m³
   pm25: number; // µg/m³
+  pm10: number; // µg/m³
   timestamp: number; // Unix timestamp
   eventId?: string; // Nostr event ID
   rawEvent?: string; // Raw event JSON
 }
 
 export interface FlaggedReading {
-  sensor: 'PM2.5' | 'Temperature' | 'Humidity';
+  sensor: 'PM1' | 'PM2.5' | 'PM10' | 'Temperature' | 'Humidity';
   value: number;
   timestamp: number;
   eventId: string;
@@ -30,16 +32,21 @@ function parseWeatherTags(tags: string[][]): Partial<WeatherReading> | null {
   try {
     const tempTag = tags.find(([name]) => name === 'temp');
     const humidityTag = tags.find(([name]) => name === 'humidity');
+    const pm1Tag = tags.find(([name]) => name === 'pm1');
     const pm25Tag = tags.find(([name]) => name === 'pm25');
+    const pm10Tag = tags.find(([name]) => name === 'pm10');
 
-    if (!tempTag || !humidityTag || !pm25Tag) {
+    // Require at least temp and humidity
+    if (!tempTag || !humidityTag) {
       return null;
     }
 
     return {
       temperature: parseFloat(tempTag[1]),
       humidity: parseFloat(humidityTag[1]),
-      pm25: parseFloat(pm25Tag[1]),
+      pm1: pm1Tag ? parseFloat(pm1Tag[1]) : 0,
+      pm25: pm25Tag ? parseFloat(pm25Tag[1]) : 0,
+      pm10: pm10Tag ? parseFloat(pm10Tag[1]) : 0,
     };
   } catch {
     return null;
@@ -155,7 +162,9 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
               readings.push({
                 temperature: parsed.temperature!,
                 humidity: parsed.humidity!,
+                pm1: parsed.pm1!,
                 pm25: pm25Value,
+                pm10: parsed.pm10!,
                 timestamp: event.created_at,
                 eventId: event.id,
                 rawEvent: JSON.stringify(event, null, 2),
