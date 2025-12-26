@@ -28,9 +28,19 @@ interface WeatherChartProps {
   data: WeatherReading[];
   units?: 'metric' | 'imperial';
   title: string;
+  showTemp?: boolean;
+  showHumidity?: boolean;
+  showPM?: boolean;
 }
 
-export function WeatherChart({ data, units = 'metric', title }: WeatherChartProps) {
+export function WeatherChart({
+  data,
+  units = 'metric',
+  title,
+  showTemp = true,
+  showHumidity = true,
+  showPM = true,
+}: WeatherChartProps) {
   if (data.length === 0) {
     return (
       <Card className="col-span-full border-dashed">
@@ -176,39 +186,46 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
     pm10Data = reversedData.map((r) => r.pm10 === 0 ? null : r.pm10);
   }
 
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        label: `Temperature (${tempUnit})`,
-        data: temperatureData,
-        borderColor: 'rgb(239, 68, 68)',
-        backgroundColor: 'rgba(239, 68, 68, 0.05)',
-        borderWidth: 2.5,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: 'rgb(239, 68, 68)',
-        pointHoverBorderColor: '#fff',
-        pointHoverBorderWidth: 2,
-        tension: 0.4,
-        fill: false,
-        spanGaps: false, // Don't connect points across null values
-      },
-      {
-        label: 'Humidity (%)',
-        data: humidityData,
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.05)',
-        borderWidth: 2.5,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: 'rgb(59, 130, 246)',
-        pointHoverBorderColor: '#fff',
-        pointHoverBorderWidth: 2,
-        tension: 0.4,
-        fill: false,
-        spanGaps: false, // Don't connect points across null values
-      },
+  const datasets = [];
+
+  if (showTemp) {
+    datasets.push({
+      label: `Temperature (${tempUnit})`,
+      data: temperatureData,
+      borderColor: 'rgb(239, 68, 68)',
+      backgroundColor: 'rgba(239, 68, 68, 0.05)',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 6,
+      pointHoverBackgroundColor: 'rgb(239, 68, 68)',
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      tension: 0.4,
+      fill: false,
+      spanGaps: false,
+    });
+  }
+
+  if (showHumidity) {
+    datasets.push({
+      label: 'Humidity (%)',
+      data: humidityData,
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.05)',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 6,
+      pointHoverBackgroundColor: 'rgb(59, 130, 246)',
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      tension: 0.4,
+      fill: false,
+      spanGaps: false,
+    });
+  }
+
+  if (showPM) {
+    datasets.push(
       {
         label: 'PM1 (µg/m³)',
         data: pm1Data,
@@ -253,8 +270,13 @@ export function WeatherChart({ data, units = 'metric', title }: WeatherChartProp
         tension: 0.4,
         fill: false,
         spanGaps: false,
-      },
-    ],
+      }
+    );
+  }
+
+  const chartData = {
+    labels,
+    datasets,
   };
 
   const options = {

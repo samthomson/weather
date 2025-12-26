@@ -69,6 +69,17 @@ const Index = () => {
 
   const currentReading = readings?.[0];
 
+  // Detect which sensors this station has based on current reading
+  const availableSensors = React.useMemo(() => {
+    if (!currentReading) return { hasTemp: false, hasHumidity: false, hasPM: false };
+
+    return {
+      hasTemp: currentReading.temperature !== 0 && currentReading.temperature !== undefined,
+      hasHumidity: currentReading.humidity !== 0 && currentReading.humidity !== undefined,
+      hasPM: currentReading.pm1 > 0 || currentReading.pm25 > 0 || currentReading.pm10 > 0,
+    };
+  }, [currentReading]);
+
   // Split data: last hour (detailed) vs 24 hour (all readings for matching)
   const { lastHourReadings, last24HourReadings } = React.useMemo(() => {
     if (!readings) return { lastHourReadings: [], last24HourReadings: [] };
@@ -258,75 +269,92 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Gauges grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <WeatherGauge
-                label="Temperature"
-                value={convertTemp(currentReading.temperature)}
-                unit={tempUnit}
-                icon={<Wind className="w-6 h-6 text-red-600" />}
-                color="text-red-600"
-                secondaryColor="bg-red-50 dark:bg-red-950/30"
-              />
+            {/* Gauges grid - adaptive based on available sensors */}
+            <div className={`grid grid-cols-1 gap-6 ${
+              availableSensors.hasTemp && availableSensors.hasHumidity && availableSensors.hasPM
+                ? 'md:grid-cols-3'
+                : availableSensors.hasPM
+                  ? 'md:grid-cols-1 max-w-md mx-auto'
+                  : 'md:grid-cols-2'
+            }`}>
+              {availableSensors.hasTemp && (
+                <WeatherGauge
+                  label="Temperature"
+                  value={convertTemp(currentReading.temperature)}
+                  unit={tempUnit}
+                  icon={<Wind className="w-6 h-6 text-red-600" />}
+                  color="text-red-600"
+                  secondaryColor="bg-red-50 dark:bg-red-950/30"
+                />
+              )}
 
-              <WeatherGauge
-                label="Humidity"
-                value={currentReading.humidity}
-                unit="%"
-                icon={<Droplets className="w-6 h-6 text-blue-600" />}
-                color="text-blue-600"
-                secondaryColor="bg-blue-50 dark:bg-blue-950/30"
-              />
+              {availableSensors.hasHumidity && (
+                <WeatherGauge
+                  label="Humidity"
+                  value={currentReading.humidity}
+                  unit="%"
+                  icon={<Droplets className="w-6 h-6 text-blue-600" />}
+                  color="text-blue-600"
+                  secondaryColor="bg-blue-50 dark:bg-blue-950/30"
+                />
+              )}
 
-              {/* Grouped PM sensors card */}
-              <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-                <CardContent className="p-8">
-                  <div className="space-y-6">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Air Quality
+              {availableSensors.hasPM && (
+                <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                  <CardContent className="p-8">
+                    <div className="space-y-6">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Air Quality
+                        </div>
+                        <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/30 shadow-sm">
+                          <Cloud className="w-6 h-6 text-purple-600" />
+                        </div>
                       </div>
-                      <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/30 shadow-sm">
-                        <Cloud className="w-6 h-6 text-purple-600" />
-                      </div>
+
+                      {/* PM1 */}
+                      {currentReading.pm1 > 0 && (
+                        <div className="space-y-1 pb-4 border-b border-slate-100 dark:border-slate-800">
+                          <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM1.0</div>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-3xl font-bold text-purple-600">
+                              {currentReading.pm1.toFixed(1)}
+                            </span>
+                            <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* PM2.5 */}
+                      {currentReading.pm25 > 0 && (
+                        <div className={`space-y-1 ${currentReading.pm10 > 0 ? 'pb-4 border-b border-slate-100 dark:border-slate-800' : ''}`}>
+                          <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM2.5</div>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-3xl font-bold text-purple-600">
+                              {currentReading.pm25.toFixed(1)}
+                            </span>
+                            <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* PM10 */}
+                      {currentReading.pm10 > 0 && (
+                        <div className="space-y-1">
+                          <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM10</div>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-3xl font-bold text-purple-600">
+                              {currentReading.pm10.toFixed(1)}
+                            </span>
+                            <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
-
-                    {/* PM1 */}
-                    <div className="space-y-1 pb-4 border-b border-slate-100 dark:border-slate-800">
-                      <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM1.0</div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-3xl font-bold text-purple-600">
-                          {currentReading.pm1.toFixed(1)}
-                        </span>
-                        <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
-                      </div>
-                    </div>
-
-                    {/* PM2.5 */}
-                    <div className="space-y-1 pb-4 border-b border-slate-100 dark:border-slate-800">
-                      <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM2.5</div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-3xl font-bold text-purple-600">
-                          {currentReading.pm25.toFixed(1)}
-                        </span>
-                        <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
-                      </div>
-                    </div>
-
-                    {/* PM10 */}
-                    <div className="space-y-1">
-                      <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM10</div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-3xl font-bold text-purple-600">
-                          {currentReading.pm10.toFixed(1)}
-                        </span>
-                        <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Historical data charts */}
@@ -341,11 +369,17 @@ const Index = () => {
                 data={lastHourReadings}
                 units={units}
                 title="Last Hour"
+                showTemp={availableSensors.hasTemp}
+                showHumidity={availableSensors.hasHumidity}
+                showPM={availableSensors.hasPM}
               />
               <WeatherChart
                 data={last24HourReadings}
                 units={units}
                 title="Last 24 Hours"
+                showTemp={availableSensors.hasTemp}
+                showHumidity={availableSensors.hasHumidity}
+                showPM={availableSensors.hasPM}
               />
             </div>
 
@@ -361,11 +395,15 @@ const Index = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Timestamp</TableHead>
-                          <TableHead>Temperature</TableHead>
-                          <TableHead>Humidity</TableHead>
-                          <TableHead>PM1</TableHead>
-                          <TableHead>PM2.5</TableHead>
-                          <TableHead>PM10</TableHead>
+                          {availableSensors.hasTemp && <TableHead>Temperature</TableHead>}
+                          {availableSensors.hasHumidity && <TableHead>Humidity</TableHead>}
+                          {availableSensors.hasPM && (
+                            <>
+                              <TableHead>PM1</TableHead>
+                              <TableHead>PM2.5</TableHead>
+                              <TableHead>PM10</TableHead>
+                            </>
+                          )}
                           <TableHead>Event</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -381,21 +419,29 @@ const Index = () => {
                                 second: '2-digit',
                               })}
                             </TableCell>
-                            <TableCell className="font-semibold">
-                              {convertTemp(reading.temperature).toFixed(1)}{tempUnit}
-                            </TableCell>
-                            <TableCell className="font-semibold">
-                              {reading.humidity.toFixed(1)}%
-                            </TableCell>
-                            <TableCell className="font-semibold">
-                              {reading.pm1.toFixed(1)}
-                            </TableCell>
-                            <TableCell className="font-semibold">
-                              {reading.pm25.toFixed(1)}
-                            </TableCell>
-                            <TableCell className="font-semibold">
-                              {reading.pm10.toFixed(1)}
-                            </TableCell>
+                            {availableSensors.hasTemp && (
+                              <TableCell className="font-semibold">
+                                {convertTemp(reading.temperature).toFixed(1)}{tempUnit}
+                              </TableCell>
+                            )}
+                            {availableSensors.hasHumidity && (
+                              <TableCell className="font-semibold">
+                                {reading.humidity.toFixed(1)}%
+                              </TableCell>
+                            )}
+                            {availableSensors.hasPM && (
+                              <>
+                                <TableCell className="font-semibold">
+                                  {reading.pm1.toFixed(1)}
+                                </TableCell>
+                                <TableCell className="font-semibold">
+                                  {reading.pm25.toFixed(1)}
+                                </TableCell>
+                                <TableCell className="font-semibold">
+                                  {reading.pm10.toFixed(1)}
+                                </TableCell>
+                              </>
+                            )}
                             <TableCell>
                               <details className="cursor-pointer">
                                 <summary className="text-blue-600 dark:text-blue-400 hover:underline text-sm">
