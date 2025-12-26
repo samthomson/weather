@@ -349,6 +349,72 @@ const Index = () => {
               />
             </div>
 
+            {/* Recent Events Table */}
+            {readings && readings.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  Recent Events
+                </h2>
+                <Card className="border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                  <CardContent className="p-6">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Timestamp</TableHead>
+                          <TableHead>Temperature</TableHead>
+                          <TableHead>Humidity</TableHead>
+                          <TableHead>PM1</TableHead>
+                          <TableHead>PM2.5</TableHead>
+                          <TableHead>PM10</TableHead>
+                          <TableHead>Event</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {readings.slice(0, 50).map((reading, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-mono text-xs">
+                              {new Date(reading.timestamp * 1000).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                              })}
+                            </TableCell>
+                            <TableCell className="font-semibold">
+                              {convertTemp(reading.temperature).toFixed(1)}{tempUnit}
+                            </TableCell>
+                            <TableCell className="font-semibold">
+                              {reading.humidity.toFixed(1)}%
+                            </TableCell>
+                            <TableCell className="font-semibold">
+                              {reading.pm1.toFixed(1)}
+                            </TableCell>
+                            <TableCell className="font-semibold">
+                              {reading.pm25.toFixed(1)}
+                            </TableCell>
+                            <TableCell className="font-semibold">
+                              {reading.pm10.toFixed(1)}
+                            </TableCell>
+                            <TableCell>
+                              <details className="cursor-pointer">
+                                <summary className="text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                                  View JSON
+                                </summary>
+                                <pre className="mt-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs overflow-x-auto max-w-2xl">
+                                  {reading.rawEvent}
+                                </pre>
+                              </details>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* Flagged Data Section */}
             {flaggedReadings.length > 0 && (
               <div className="space-y-4">
