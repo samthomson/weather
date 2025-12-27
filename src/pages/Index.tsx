@@ -165,18 +165,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      {/* Header */}
-      <div className="border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Top row - App branding and units */}
-          <div className="flex items-center justify-between mb-6">
+      {/* Compact top bar */}
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md shadow-blue-500/20">
-                <Cloud className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-                Weather Stations
-              </span>
+              <Cloud className="w-5 h-5 text-blue-600" />
+              <span className="font-semibold text-slate-900 dark:text-slate-100">Weather Stations</span>
             </div>
 
             {/* Units selector */}
@@ -200,68 +195,66 @@ const Index = () => {
               </SelectContent>
             </Select>
           </div>
+        </div>
+      </div>
 
-          {/* Station info - prominent */}
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-800/30 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  {stations && stations.length > 1 && (
-                    <Select
-                      value={activeStationPubkey || undefined}
-                      onValueChange={(value) => setSelectedStation(value)}
-                    >
-                      <SelectTrigger className="w-64 bg-white dark:bg-slate-900 border-2">
-                        <SelectValue placeholder="Select station..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {stations.map((station) => (
-                          <SelectItem key={station.pubkey} value={station.pubkey}>
-                            <div className="flex flex-col">
-                              <span className="font-semibold">{station.name}</span>
-                              {station.location && (
-                                <span className="text-xs text-slate-500">📍 {station.location}</span>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                  {(!stations || stations.length <= 1) && stationMetadata && (
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-                      {stationMetadata.name || 'Weather Station'}
-                    </h1>
-                  )}
-                </div>
-
-                {stationMetadata && (
-                  <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
-                    {stationMetadata.location && (
-                      <span className="flex items-center gap-1.5">
-                        <span>📍</span>
-                        <span>{stationMetadata.location}</span>
-                      </span>
-                    )}
-                    {stationMetadata.elevation && (
-                      <span className="flex items-center gap-1.5">
-                        <span>⛰️</span>
-                        <span>{stationMetadata.elevation}m elevation</span>
-                      </span>
-                    )}
-                    {stationMetadata.sensors.length > 0 && (
-                      <span className="flex items-center gap-1.5">
-                        <span>📡</span>
-                        <span>{stationMetadata.sensors.length} sensors</span>
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
+      {/* Station selector tabs */}
+      {stations && stations.length > 0 && (
+        <div className="bg-slate-50 dark:bg-slate-900/50 border-b-4 border-blue-500">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex gap-2 py-4 overflow-x-auto">
+              {stations.map((station) => {
+                const isActive = station.pubkey === activeStationPubkey;
+                return (
+                  <button
+                    key={station.pubkey}
+                    onClick={() => setSelectedStation(station.pubkey)}
+                    className={`
+                      px-6 py-4 rounded-t-xl font-semibold transition-all whitespace-nowrap
+                      ${isActive
+                        ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-lg -mb-1 border-t-4 border-blue-500'
+                        : 'bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
+                      }
+                    `}
+                  >
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-base">{station.name}</span>
+                      {station.location && (
+                        <span className="text-xs opacity-70">📍 {station.location}</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Single station header (when only one station) */}
+      {(!stations || stations.length <= 1) && stationMetadata && (
+        <div className="bg-slate-50 dark:bg-slate-900/50 border-b-4 border-blue-500">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+              {stationMetadata.name || 'Weather Station'}
+            </h1>
+            <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+              {stationMetadata.location && (
+                <span className="flex items-center gap-1.5">
+                  <span>📍</span>
+                  <span>{stationMetadata.location}</span>
+                </span>
+              )}
+              {stationMetadata.elevation && (
+                <span className="flex items-center gap-1.5">
+                  <span>⛰️</span>
+                  <span>{stationMetadata.elevation}m</span>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
