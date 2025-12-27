@@ -19,11 +19,17 @@ interface SensorToggleProps {
 export function SensorToggle({ availableSensors, visibleSensors, onToggle, onSetAll }: SensorToggleProps) {
   const [open, setOpen] = useState(false);
 
-  const handleSelectAll = () => {
+  const handleSelectAll = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Select All clicked', availableSensors);
     onSetAll([...availableSensors]);
   };
 
-  const handleSelectNone = () => {
+  const handleSelectNone = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Select None clicked');
     onSetAll([]);
   };
 
@@ -52,6 +58,7 @@ export function SensorToggle({ availableSensors, visibleSensors, onToggle, onSet
             <div className="font-semibold text-sm">Visible Sensors</div>
             <div className="flex gap-1">
               <button
+                type="button"
                 onClick={handleSelectAll}
                 className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline"
               >
@@ -59,6 +66,7 @@ export function SensorToggle({ availableSensors, visibleSensors, onToggle, onSet
               </button>
               <span className="text-xs text-slate-300 dark:text-slate-600">|</span>
               <button
+                type="button"
                 onClick={handleSelectNone}
                 className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline"
               >
