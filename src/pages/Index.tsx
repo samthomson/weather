@@ -178,7 +178,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-800/50">
       {/* Header */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -214,10 +214,10 @@ const Index = () => {
 
       {/* Station selector tabs */}
       {stations && stations.length > 0 && (
-        <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-slate-100 dark:bg-slate-800/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between gap-4 py-3">
-              <div className="flex gap-2 overflow-x-auto">
+            <div className="flex items-end justify-between gap-4 pt-2">
+              <div className="flex gap-1 overflow-x-auto">
                 {stations.slice(0, 5).map((station) => {
                   const isActive = station.pubkey === activeStationPubkey;
                   return (
@@ -225,10 +225,10 @@ const Index = () => {
                       key={station.pubkey}
                       onClick={() => setSelectedStation(station.pubkey)}
                       className={`
-                        px-4 py-2 rounded-full font-medium transition-all whitespace-nowrap text-sm
+                        px-5 py-3 rounded-t-xl font-medium transition-all whitespace-nowrap text-sm border-t-2 border-x-2
                         ${isActive
-                          ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md'
-                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                          ? 'bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700'
+                          : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-transparent hover:bg-slate-100 dark:hover:bg-slate-700/50'
                         }
                       `}
                     >
@@ -239,40 +239,42 @@ const Index = () => {
               </div>
 
               {/* Station search dropdown */}
-              <Popover open={stationSearchOpen} onOpenChange={setStationSearchOpen}>
-                <PopoverTrigger asChild>
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-sm">
-                    <Search className="w-4 h-4 text-slate-500" />
-                    <span className="text-slate-600 dark:text-slate-400">All Stations</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 p-0" align="end">
-                  <Command>
-                    <CommandInput placeholder="Search stations..." />
-                    <CommandList>
-                      <CommandEmpty>No stations found.</CommandEmpty>
-                      <CommandGroup>
-                        {stations.map((station) => (
-                          <CommandItem
-                            key={station.pubkey}
-                            onSelect={() => {
-                              setSelectedStation(station.pubkey);
-                              setStationSearchOpen(false);
-                            }}
-                            className="flex flex-col items-start gap-1 py-3"
-                          >
-                            <div className="font-semibold">{station.name}</div>
-                            {station.location && (
-                              <div className="text-xs text-slate-500">📍 {station.location}</div>
-                            )}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <div className="pb-2">
+                <Popover open={stationSearchOpen} onOpenChange={setStationSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm">
+                      <Search className="w-3.5 h-3.5 text-slate-500" />
+                      <span className="text-slate-600 dark:text-slate-400 text-xs">Search</span>
+                      <ChevronDown className="w-3 h-3 text-slate-400" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-0" align="end">
+                    <Command>
+                      <CommandInput placeholder="Search stations..." />
+                      <CommandList>
+                        <CommandEmpty>No stations found.</CommandEmpty>
+                        <CommandGroup>
+                          {stations.map((station) => (
+                            <CommandItem
+                              key={station.pubkey}
+                              onSelect={() => {
+                                setSelectedStation(station.pubkey);
+                                setStationSearchOpen(false);
+                              }}
+                              className="flex flex-col items-start gap-1 py-3"
+                            >
+                              <div className="font-semibold">{station.name}</div>
+                              {station.location && (
+                                <div className="text-xs text-slate-500">📍 {station.location}</div>
+                              )}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </div>
         </div>
@@ -301,9 +303,10 @@ const Index = () => {
         </div>
       )}
 
-      {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Error state */}
+      {/* Main content - tab content area */}
+      <div className="bg-white dark:bg-slate-950 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          {/* Error state */}
         {error && (
           <Card className="mb-8 border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20">
             <CardContent className="pt-6">
@@ -660,6 +663,7 @@ const Index = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
