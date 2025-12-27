@@ -7,6 +7,7 @@ export interface WeatherReading {
   pm1?: number; // µg/m³
   pm25?: number; // µg/m³
   pm10?: number; // µg/m³
+  air_quality?: number; // 0-1000 scale
   timestamp: number; // Unix timestamp
   eventId?: string; // Nostr event ID
   rawEvent?: string; // Raw event JSON
@@ -37,7 +38,7 @@ export interface DetectedSensors {
 }
 
 // Known sensor types we support
-const KNOWN_SENSORS = ['temp', 'humidity', 'pm1', 'pm25', 'pm10'];
+const KNOWN_SENSORS = ['temp', 'humidity', 'pm1', 'pm25', 'pm10', 'air_quality'];
 
 // Non-sensor tags to ignore
 const IGNORED_TAGS = ['a', 's', 'e', 'p', 'd', 'alt', 'client'];
@@ -75,6 +76,9 @@ function parseWeatherTags(tags: string[][]): {
         break;
       case 'pm10':
         reading.pm10 = numValue;
+        break;
+      case 'air_quality':
+        reading.air_quality = numValue;
         break;
       default:
         // Store unknown sensors in dynamic properties

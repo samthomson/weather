@@ -74,6 +74,7 @@ export function WeatherChart({
   let pm1Data: (number | null)[];
   let pm25Data: (number | null)[];
   let pm10Data: (number | null)[];
+  let airQualityData: (number | null)[];
 
   if (is24HourChart) {
     // For 24-hour chart: create exactly 24 hourly time slots
@@ -122,6 +123,11 @@ export function WeatherChart({
       const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
       return reading ? (reading.pm10 === 0 ? null : reading.pm10) : null;
     });
+
+    airQualityData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
+      return reading?.air_quality || null;
+    });
   } else if (isLastHourChart) {
     // For last hour chart: create 1-minute interval time slots (60 slots for 1 hour)
     const now = Math.floor(Date.now() / 1000);
@@ -169,6 +175,11 @@ export function WeatherChart({
       const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
       return reading ? (reading.pm10 === 0 ? null : reading.pm10) : null;
     });
+
+    airQualityData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
+      return reading?.air_quality || null;
+    });
   } else {
     // Fallback: use all data points as-is
     const reversedData = data.slice().reverse();
@@ -182,11 +193,12 @@ export function WeatherChart({
       });
     });
 
-    temperatureData = reversedData.map((r) => convertTemp(r.temperature));
-    humidityData = reversedData.map((r) => r.humidity);
+    temperatureData = reversedData.map((r) => r.temperature || null);
+    humidityData = reversedData.map((r) => r.humidity || null);
     pm1Data = reversedData.map((r) => r.pm1 === 0 ? null : r.pm1);
     pm25Data = reversedData.map((r) => r.pm25 === 0 ? null : r.pm25);
     pm10Data = reversedData.map((r) => r.pm10 === 0 ? null : r.pm10);
+    airQualityData = reversedData.map((r) => r.air_quality || null);
   }
 
   const datasets = [];
@@ -279,6 +291,24 @@ export function WeatherChart({
         fill: false,
         spanGaps: false,
       });
+  }
+
+  if (visibleSensors.includes('air_quality')) {
+    datasets.push({
+      label: 'Air Quality (0-1000)',
+      data: airQualityData,
+      borderColor: 'rgb(34, 197, 94)',
+      backgroundColor: 'rgba(34, 197, 94, 0.05)',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 6,
+      pointHoverBackgroundColor: 'rgb(34, 197, 94)',
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      tension: 0.4,
+      fill: false,
+      spanGaps: false,
+    });
   }
 
   const chartData = {

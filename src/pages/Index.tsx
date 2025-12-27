@@ -433,6 +433,49 @@ const Index = () => {
                   showAirQualityScale={true}
                 />
               )}
+
+              {currentReading.air_quality !== undefined && currentReading.air_quality > 0 && (
+                <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                  <CardContent className="p-8">
+                    <div className="space-y-6">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Air Quality Index
+                        </div>
+                        <div className="p-3 rounded-xl bg-green-50 dark:bg-green-950/30 shadow-sm">
+                          <Cloud className="w-6 h-6 text-green-600" />
+                        </div>
+                      </div>
+
+                      {/* Large value display */}
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-6xl font-bold text-green-600">
+                          {currentReading.air_quality.toFixed(0)}
+                        </span>
+                        <span className="text-2xl font-semibold text-slate-400 dark:text-slate-500">
+                          / 1000
+                        </span>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="space-y-2">
+                        <div className="relative h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
+                            style={{ width: `${(currentReading.air_quality / 1000) * 100}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                          <span>0</span>
+                          <span>500</span>
+                          <span>1000</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Historical data charts */}
@@ -513,6 +556,7 @@ const Index = () => {
                           {visibleSensorsTable.includes('pm1') && <TableHead>PM1</TableHead>}
                           {visibleSensorsTable.includes('pm25') && <TableHead>PM2.5</TableHead>}
                           {visibleSensorsTable.includes('pm10') && <TableHead>PM10</TableHead>}
+                          {visibleSensorsTable.includes('air_quality') && <TableHead>Air Quality</TableHead>}
                           <TableHead>Event</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -551,6 +595,11 @@ const Index = () => {
                             {visibleSensorsTable.includes('pm10') && (
                               <TableCell className="font-semibold">
                                 {(reading.pm10 || 0).toFixed(1)}
+                              </TableCell>
+                            )}
+                            {visibleSensorsTable.includes('air_quality') && (
+                              <TableCell className="font-semibold">
+                                {(reading.air_quality || 0).toFixed(0)}
                               </TableCell>
                             )}
                             <TableCell>
