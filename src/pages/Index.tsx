@@ -165,12 +165,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      {/* Compact top bar */}
+      {/* Header */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Cloud className="w-5 h-5 text-blue-600" />
+            <div className="flex items-center gap-3">
+              <Cloud className="w-6 h-6 text-slate-400" />
               <span className="font-semibold text-slate-900 dark:text-slate-100">Weather Stations</span>
             </div>
 
@@ -200,9 +200,9 @@ const Index = () => {
 
       {/* Station selector tabs */}
       {stations && stations.length > 0 && (
-        <div className="bg-slate-50 dark:bg-slate-900/50 border-b-2 border-blue-500">
+        <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex gap-1 overflow-x-auto">
+            <div className="flex gap-6 overflow-x-auto">
               {stations.map((station) => {
                 const isActive = station.pubkey === activeStationPubkey;
                 return (
@@ -210,19 +210,14 @@ const Index = () => {
                     key={station.pubkey}
                     onClick={() => setSelectedStation(station.pubkey)}
                     className={`
-                      px-4 py-2.5 font-medium transition-all whitespace-nowrap text-sm
+                      py-3 font-medium transition-all whitespace-nowrap border-b-2
                       ${isActive
-                        ? 'bg-white dark:bg-slate-900 text-blue-600 border-t-2 border-blue-500 shadow-sm'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/50'
+                        ? 'text-slate-900 dark:text-slate-100 border-slate-900 dark:border-slate-100'
+                        : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600'
                       }
                     `}
                   >
-                    <div className="flex items-center gap-2">
-                      <span>{station.name}</span>
-                      {station.location && isActive && (
-                        <span className="text-xs opacity-60">📍 {station.location}</span>
-                      )}
-                    </div>
+                    {station.name}
                   </button>
                 );
               })}
@@ -233,10 +228,10 @@ const Index = () => {
 
       {/* Single station header (when only one station) */}
       {(!stations || stations.length <= 1) && stationMetadata && (
-        <div className="bg-slate-50 dark:bg-slate-900/50 border-b-2 border-blue-500">
+        <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {stationMetadata.name || 'Weather Station'}
               </h1>
               {stationMetadata.location && (
