@@ -13,26 +13,18 @@ interface SensorToggleProps {
   availableSensors: string[];
   visibleSensors: string[];
   onToggle: (sensor: string, visible: boolean) => void;
-  onSetAll?: (sensors: string[]) => void;
+  onSetAll: (sensors: string[]) => void;
 }
 
 export function SensorToggle({ availableSensors, visibleSensors, onToggle, onSetAll }: SensorToggleProps) {
   const [open, setOpen] = useState(false);
 
   const handleSelectAll = () => {
-    if (onSetAll) {
-      onSetAll(availableSensors);
-    } else {
-      availableSensors.forEach(sensor => onToggle(sensor, true));
-    }
+    onSetAll([...availableSensors]);
   };
 
   const handleSelectNone = () => {
-    if (onSetAll) {
-      onSetAll([]);
-    } else {
-      availableSensors.forEach(sensor => onToggle(sensor, false));
-    }
+    onSetAll([]);
   };
 
   const getSensorLabel = (sensor: string): string => {
