@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SensorToggle } from '@/components/SensorToggle';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -28,18 +29,18 @@ interface WeatherChartProps {
   data: WeatherReading[];
   units?: 'metric' | 'imperial';
   title: string;
-  showTemp?: boolean;
-  showHumidity?: boolean;
-  showPM?: boolean;
+  availableSensors: string[];
+  visibleSensors: string[];
+  onSensorToggle: (sensor: string, visible: boolean) => void;
 }
 
 export function WeatherChart({
   data,
   units = 'metric',
   title,
-  showTemp = true,
-  showHumidity = true,
-  showPM = true,
+  availableSensors,
+  visibleSensors,
+  onSensorToggle,
 }: WeatherChartProps) {
   if (data.length === 0) {
     return (
@@ -188,7 +189,7 @@ export function WeatherChart({
 
   const datasets = [];
 
-  if (showTemp) {
+  if (visibleSensors.includes('temp')) {
     datasets.push({
       label: `Temperature (${tempUnit})`,
       data: temperatureData,
@@ -206,7 +207,7 @@ export function WeatherChart({
     });
   }
 
-  if (showHumidity) {
+  if (visibleSensors.includes('humidity')) {
     datasets.push({
       label: 'Humidity (%)',
       data: humidityData,
@@ -224,10 +225,9 @@ export function WeatherChart({
     });
   }
 
-  if (showPM) {
-    datasets.push(
-      {
-        label: 'PM1 (µg/m³)',
+  if (visibleSensors.includes('pm1')) {
+    datasets.push({
+      label: 'PM1 (µg/m³)',
         data: pm1Data,
         borderColor: 'rgb(139, 92, 246)',
         backgroundColor: 'rgba(139, 92, 246, 0.05)',
@@ -240,9 +240,12 @@ export function WeatherChart({
         tension: 0.4,
         fill: false,
         spanGaps: false,
-      },
-      {
-        label: 'PM2.5 (µg/m³)',
+      });
+  }
+
+  if (visibleSensors.includes('pm25')) {
+    datasets.push({
+      label: 'PM2.5 (µg/m³)',
         data: pm25Data,
         borderColor: 'rgb(168, 85, 247)',
         backgroundColor: 'rgba(168, 85, 247, 0.05)',
@@ -255,9 +258,12 @@ export function WeatherChart({
         tension: 0.4,
         fill: false,
         spanGaps: false,
-      },
-      {
-        label: 'PM10 (µg/m³)',
+      });
+  }
+
+  if (visibleSensors.includes('pm10')) {
+    datasets.push({
+      label: 'PM10 (µg/m³)',
         data: pm10Data,
         borderColor: 'rgb(192, 132, 252)',
         backgroundColor: 'rgba(192, 132, 252, 0.05)',
@@ -270,8 +276,7 @@ export function WeatherChart({
         tension: 0.4,
         fill: false,
         spanGaps: false,
-      }
-    );
+      });
   }
 
   const chartData = {
@@ -351,7 +356,14 @@ export function WeatherChart({
   return (
     <Card className="border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300 w-full">
       <CardHeader className="pb-6 border-b border-slate-100 dark:border-slate-800">
-        <CardTitle className="text-xl font-bold text-slate-900 dark:text-slate-100">{title}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl font-bold text-slate-900 dark:text-slate-100">{title}</CardTitle>
+          <SensorToggle
+            availableSensors={availableSensors}
+            visibleSensors={visibleSensors}
+            onToggle={onSensorToggle}
+          />
+        </div>
       </CardHeader>
       <CardContent className="pt-8">
         <div className="w-full h-80">

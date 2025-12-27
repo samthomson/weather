@@ -51,26 +51,36 @@ const Index = () => {
   const detectedSensors = data?.detectedSensors;
 
   const [units, setUnits] = useLocalStorage<'metric' | 'imperial'>('weather:units', 'metric');
-  const [visibleSensors, setVisibleSensors] = useLocalStorage<string[]>(
-    'weather:visible-sensors',
+
+  // Separate visibility states for each component
+  const [visibleSensorsLastHour, setVisibleSensorsLastHour] = useLocalStorage<string[]>(
+    'weather:visible-sensors-last-hour',
+    []
+  );
+  const [visibleSensors24Hour, setVisibleSensors24Hour] = useLocalStorage<string[]>(
+    'weather:visible-sensors-24-hour',
+    []
+  );
+  const [visibleSensorsTable, setVisibleSensorsTable] = useLocalStorage<string[]>(
+    'weather:visible-sensors-table',
     []
   );
   const [, setTick] = useState(0);
 
   // Initialize visible sensors when detected sensors change
   React.useEffect(() => {
-    if (detectedSensors && visibleSensors.length === 0) {
-      setVisibleSensors(detectedSensors.supported);
+    if (detectedSensors) {
+      if (visibleSensorsLastHour.length === 0) {
+        setVisibleSensorsLastHour(detectedSensors.supported);
+      }
+      if (visibleSensors24Hour.length === 0) {
+        setVisibleSensors24Hour(detectedSensors.supported);
+      }
+      if (visibleSensorsTable.length === 0) {
+        setVisibleSensorsTable(detectedSensors.supported);
+      }
     }
-  }, [detectedSensors, visibleSensors.length, setVisibleSensors]);
-
-  const handleSensorToggle = (sensor: string, visible: boolean) => {
-    if (visible) {
-      setVisibleSensors([...visibleSensors, sensor]);
-    } else {
-      setVisibleSensors(visibleSensors.filter(s => s !== sensor));
-    }
-  };
+  }, [detectedSensors, visibleSensorsLastHour.length, visibleSensors24Hour.length, visibleSensorsTable.length, setVisibleSensorsLastHour, setVisibleSensors24Hour, setVisibleSensorsTable]);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -92,18 +102,16 @@ const Index = () => {
 
   const currentReading = readings?.[0];
 
-  // Check which sensors are available and visible
+  // Check which sensors are available for gauge cards (always show all)
   const availableSensors = React.useMemo(() => {
     if (!detectedSensors) return { hasTemp: false, hasHumidity: false, hasPM: false };
 
-    const hasTemp = detectedSensors.supported.includes('temp') && visibleSensors.includes('temp');
-    const hasHumidity = detectedSensors.supported.includes('humidity') && visibleSensors.includes('humidity');
-    const hasPM = ['pm1', 'pm25', 'pm10'].some(pm =>
-      detectedSensors.supported.includes(pm) && visibleSensors.includes(pm)
-    );
+    const hasTemp = detectedSensors.supported.includes('temp');
+    const hasHumidity = detectedSensors.supported.includes('humidity');
+    const hasPM = ['pm1', 'pm25', 'pm10'].some(pm => detectedSensors.supported.includes(pm));
 
     return { hasTemp, hasHumidity, hasPM };
-  }, [detectedSensors, visibleSensors]);
+  }, [detectedSensors]);
 
   // Split data: last hour (detailed) vs 24 hour (all readings for matching)
   const { lastHourReadings, last24HourReadings } = React.useMemo(() => {
@@ -307,7 +315,7 @@ const Index = () => {
                   ? 'md:grid-cols-1 max-w-md mx-auto'
                   : 'md:grid-cols-2'
             }`}>
-              {visibleSensors.includes('temp') && currentReading.temperature !== undefined && (
+              {availableSensors.hasTemp && currentReading.temperature !== undefined && (
                 <WeatherGauge
                   label="Temperature"
                   value={convertTemp(currentReading.temperature)}
@@ -318,7 +326,7 @@ const Index = () => {
                 />
               )}
 
-              {visibleSensors.includes('humidity') && currentReading.humidity !== undefined && (
+              {availableSensors.hasHumidity && currentReading.humidity !== undefined && (
                 <WeatherGauge
                   label="Humidity"
                   value={currentReading.humidity}
@@ -344,7 +352,7 @@ const Index = () => {
                       </div>
 
                       {/* PM1 */}
-                      {visibleSensors.includes('pm1') && currentReading.pm1 !== undefined && currentReading.pm1 > 0 && (
+                      {currentReading.pm1 !== undefined && currentReading.pm1 > 0 && (
                         <div className="space-y-1 pb-4 border-b border-slate-100 dark:border-slate-800">
                           <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM1.0</div>
                           <div className="flex items-baseline gap-1.5">
@@ -357,8 +365,8 @@ const Index = () => {
                       )}
 
                       {/* PM2.5 */}
-                      {visibleSensors.includes('pm25') && currentReading.pm25 !== undefined && currentReading.pm25 > 0 && (
-                        <div className={`space-y-1 ${(visibleSensors.includes('pm10') && currentReading.pm10 && currentReading.pm10 > 0) ? 'pb-4 border-b border-slate-100 dark:border-slate-800' : ''}`}>
+                      {currentReading.pm25 !== undefined && currentReading.pm25 > 0 && (
+                        <div className={`space-y-1 ${(currentReading.pm10 && currentReading.pm10 > 0) ? 'pb-4 border-b border-slate-100 dark:border-slate-800' : ''}`}>
                           <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM2.5</div>
                           <div className="flex items-baseline gap-1.5">
                             <span className="text-3xl font-bold text-purple-600">
@@ -370,7 +378,7 @@ const Index = () => {
                       )}
 
                       {/* PM10 */}
-                      {visibleSensors.includes('pm10') && currentReading.pm10 !== undefined && currentReading.pm10 > 0 && (
+                      {currentReading.pm10 !== undefined && currentReading.pm10 > 0 && (
                         <div className="space-y-1">
                           <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM10</div>
                           <div className="flex items-baseline gap-1.5">
@@ -389,18 +397,9 @@ const Index = () => {
 
             {/* Historical data charts */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                  Trends
-                </h2>
-                {detectedSensors && detectedSensors.supported.length > 0 && (
-                  <SensorToggle
-                    availableSensors={detectedSensors.supported}
-                    visibleSensors={visibleSensors}
-                    onToggle={handleSensorToggle}
-                  />
-                )}
-              </div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                Trends
+              </h2>
             </div>
 
             <div className="space-y-6">
@@ -408,46 +407,69 @@ const Index = () => {
                 data={lastHourReadings}
                 units={units}
                 title="Last Hour"
-                showTemp={availableSensors.hasTemp}
-                showHumidity={availableSensors.hasHumidity}
-                showPM={availableSensors.hasPM}
+                availableSensors={detectedSensors?.supported || []}
+                visibleSensors={visibleSensorsLastHour}
+                onSensorToggle={(sensor, visible) => {
+                  if (visible) {
+                    setVisibleSensorsLastHour([...visibleSensorsLastHour, sensor]);
+                  } else {
+                    setVisibleSensorsLastHour(visibleSensorsLastHour.filter(s => s !== sensor));
+                  }
+                }}
               />
               <WeatherChart
                 data={last24HourReadings}
                 units={units}
                 title="Last 24 Hours"
-                showTemp={availableSensors.hasTemp}
-                showHumidity={availableSensors.hasHumidity}
-                showPM={availableSensors.hasPM}
+                availableSensors={detectedSensors?.supported || []}
+                visibleSensors={visibleSensors24Hour}
+                onSensorToggle={(sensor, visible) => {
+                  if (visible) {
+                    setVisibleSensors24Hour([...visibleSensors24Hour, sensor]);
+                  } else {
+                    setVisibleSensors24Hour(visibleSensors24Hour.filter(s => s !== sensor));
+                  }
+                }}
               />
             </div>
 
             {/* Recent Events Table */}
             {readings && readings.length > 0 && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                    Recent Events
-                  </h2>
-                  {detectedSensors && detectedSensors.supported.length > 0 && (
-                    <SensorToggle
-                      availableSensors={detectedSensors.supported}
-                      visibleSensors={visibleSensors}
-                      onToggle={handleSensorToggle}
-                    />
-                  )}
-                </div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  Recent Events
+                </h2>
                 <Card className="border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                  <CardHeader className="pb-6 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        Last 50 Readings
+                      </CardTitle>
+                      {detectedSensors && detectedSensors.supported.length > 0 && (
+                        <SensorToggle
+                          availableSensors={detectedSensors.supported}
+                          visibleSensors={visibleSensorsTable}
+                          onToggle={(sensor, visible) => {
+                            if (visible) {
+                              setVisibleSensorsTable([...visibleSensorsTable, sensor]);
+                            } else {
+                              setVisibleSensorsTable(visibleSensorsTable.filter(s => s !== sensor));
+                            }
+                          }}
+                        />
+                      )}
+                    </div>
+                  </CardHeader>
                   <CardContent className="p-6">
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Timestamp</TableHead>
-                          {visibleSensors.includes('temp') && <TableHead>Temperature</TableHead>}
-                          {visibleSensors.includes('humidity') && <TableHead>Humidity</TableHead>}
-                          {visibleSensors.includes('pm1') && <TableHead>PM1</TableHead>}
-                          {visibleSensors.includes('pm25') && <TableHead>PM2.5</TableHead>}
-                          {visibleSensors.includes('pm10') && <TableHead>PM10</TableHead>}
+                          {visibleSensorsTable.includes('temp') && <TableHead>Temperature</TableHead>}
+                          {visibleSensorsTable.includes('humidity') && <TableHead>Humidity</TableHead>}
+                          {visibleSensorsTable.includes('pm1') && <TableHead>PM1</TableHead>}
+                          {visibleSensorsTable.includes('pm25') && <TableHead>PM2.5</TableHead>}
+                          {visibleSensorsTable.includes('pm10') && <TableHead>PM10</TableHead>}
                           <TableHead>Event</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -463,27 +485,27 @@ const Index = () => {
                                 second: '2-digit',
                               })}
                             </TableCell>
-                            {visibleSensors.includes('temp') && reading.temperature !== undefined && (
+                            {visibleSensorsTable.includes('temp') && reading.temperature !== undefined && (
                               <TableCell className="font-semibold">
                                 {convertTemp(reading.temperature).toFixed(1)}{tempUnit}
                               </TableCell>
                             )}
-                            {visibleSensors.includes('humidity') && reading.humidity !== undefined && (
+                            {visibleSensorsTable.includes('humidity') && reading.humidity !== undefined && (
                               <TableCell className="font-semibold">
                                 {reading.humidity.toFixed(1)}%
                               </TableCell>
                             )}
-                            {visibleSensors.includes('pm1') && (
+                            {visibleSensorsTable.includes('pm1') && (
                               <TableCell className="font-semibold">
                                 {(reading.pm1 || 0).toFixed(1)}
                               </TableCell>
                             )}
-                            {visibleSensors.includes('pm25') && (
+                            {visibleSensorsTable.includes('pm25') && (
                               <TableCell className="font-semibold">
                                 {(reading.pm25 || 0).toFixed(1)}
                               </TableCell>
                             )}
-                            {visibleSensors.includes('pm10') && (
+                            {visibleSensorsTable.includes('pm10') && (
                               <TableCell className="font-semibold">
                                 {(reading.pm10 || 0).toFixed(1)}
                               </TableCell>
