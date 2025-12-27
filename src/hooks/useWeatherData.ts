@@ -2,14 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 
 export interface WeatherReading {
-  temperature: number; // Celsius
-  humidity: number; // Percentage
-  pm1: number; // µg/m³
-  pm25: number; // µg/m³
-  pm10: number; // µg/m³
+  temperature?: number; // Celsius
+  humidity?: number; // Percentage
+  pm1?: number; // µg/m³
+  pm25?: number; // µg/m³
+  pm10?: number; // µg/m³
   timestamp: number; // Unix timestamp
   eventId?: string; // Nostr event ID
   rawEvent?: string; // Raw event JSON
+  // Dynamic sensor data
+  [key: string]: number | string | undefined;
 }
 
 export interface FlaggedReading {
@@ -28,29 +30,59 @@ export interface WeatherStationMetadata {
   sensors: string[];
 }
 
-function parseWeatherTags(tags: string[][]): Partial<WeatherReading> | null {
-  try {
-    const tempTag = tags.find(([name]) => name === 'temp');
-    const humidityTag = tags.find(([name]) => name === 'humidity');
-    const pm1Tag = tags.find(([name]) => name === 'pm1');
-    const pm25Tag = tags.find(([name]) => name === 'pm25');
-    const pm10Tag = tags.find(([name]) => name === 'pm10');
+export interface DetectedSensors {
+  supported: string[]; // Known sensor types we can display
+  unsupported: string[]; // Unknown sensor types
+  all: string[]; // All sensor types found
+}
 
-    // Require at least temp and humidity
-    if (!tempTag || !humidityTag) {
-      return null;
+// Known sensor types we support
+const KNOWN_SENSORS = ['temp', 'humidity', 'pm1', 'pm25', 'pm10'];
+
+// Non-sensor tags to ignore
+const IGNORED_TAGS = ['a', 's', 'e', 'p', 'd', 'alt', 'client'];
+
+function parseWeatherTags(tags: string[][]): {
+  reading: Partial<WeatherReading>;
+  sensorTypes: string[];
+} {
+  const reading: Partial<WeatherReading> = {};
+  const sensorTypes: string[] = [];
+
+  for (const [name, value] of tags) {
+    // Skip non-sensor tags
+    if (IGNORED_TAGS.includes(name)) continue;
+
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) continue;
+
+    // Track all sensor types found
+    sensorTypes.push(name);
+
+    // Parse known sensors
+    switch (name) {
+      case 'temp':
+        reading.temperature = numValue;
+        break;
+      case 'humidity':
+        reading.humidity = numValue;
+        break;
+      case 'pm1':
+        reading.pm1 = numValue;
+        break;
+      case 'pm25':
+        reading.pm25 = numValue;
+        break;
+      case 'pm10':
+        reading.pm10 = numValue;
+        break;
+      default:
+        // Store unknown sensors in dynamic properties
+        reading[name] = numValue;
     }
-
-    return {
-      temperature: parseFloat(tempTag[1]),
-      humidity: parseFloat(humidityTag[1]),
-      pm1: pm1Tag ? parseFloat(pm1Tag[1]) : 0,
-      pm25: pm25Tag ? parseFloat(pm25Tag[1]) : 0,
-      pm10: pm10Tag ? parseFloat(pm10Tag[1]) : 0,
-    };
-  } catch {
-    return null;
   }
+
+  return { reading, sensorTypes };
 }
 
 function parseStationMetadata(tags: string[][]): WeatherStationMetadata {
@@ -74,6 +106,7 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
     readings: WeatherReading[];
     flaggedReadings: FlaggedReading[];
     stationMetadata?: WeatherStationMetadata;
+    detectedSensors: DetectedSensors;
   }>({
     queryKey: ['weatherData', relayUrl, authorPubkey],
     queryFn: async (c) => {
@@ -135,17 +168,22 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
         const readings: WeatherReading[] = [];
         const flaggedReadings: FlaggedReading[] = [];
         const seenTimestamps = new Set<number>();
+        const allSensorTypes = new Set<string>();
         let previousPM1: number | null = null;
         let previousPM25: number | null = null;
         let previousPM10: number | null = null;
 
         for (const event of sorted) {
           if (!seenTimestamps.has(event.created_at)) {
-            const parsed = parseWeatherTags(event.tags);
-            if (parsed) {
-              let pm1Value = parsed.pm1!;
-              let pm25Value = parsed.pm25!;
-              let pm10Value = parsed.pm10!;
+            const { reading: parsed, sensorTypes } = parseWeatherTags(event.tags);
+
+            // Track all sensor types encountered
+            sensorTypes.forEach(s => allSensorTypes.add(s));
+
+            if (parsed && Object.keys(parsed).length > 0) {
+              let pm1Value = parsed.pm1 || 0;
+              let pm25Value = parsed.pm25 || 0;
+              let pm10Value = parsed.pm10 || 0;
 
               // Check PM1 for anomalies
               if (previousPM1 !== null && previousPM1 > 0 && pm1Value > previousPM1 * 5) {
@@ -187,8 +225,9 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
               }
 
               readings.push({
-                temperature: parsed.temperature!,
-                humidity: parsed.humidity!,
+                ...parsed, // Include all dynamic sensor data
+                temperature: parsed.temperature,
+                humidity: parsed.humidity,
                 pm1: pm1Value,
                 pm25: pm25Value,
                 pm10: pm10Value,
@@ -207,7 +246,17 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
           }
         }
 
-        return { readings, flaggedReadings, stationMetadata };
+        // Categorize detected sensors
+        const supportedSensors = Array.from(allSensorTypes).filter(s => KNOWN_SENSORS.includes(s));
+        const unsupportedSensors = Array.from(allSensorTypes).filter(s => !KNOWN_SENSORS.includes(s));
+
+        const detectedSensors: DetectedSensors = {
+          supported: supportedSensors,
+          unsupported: unsupportedSensors,
+          all: Array.from(allSensorTypes),
+        };
+
+        return { readings, flaggedReadings, stationMetadata, detectedSensors };
       } catch (error) {
         console.error('Error fetching weather data:', error);
         throw error;
