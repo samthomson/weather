@@ -311,13 +311,7 @@ const Index = () => {
             </div>
 
             {/* Gauges grid - adaptive based on available sensors */}
-            <div className={`grid grid-cols-1 gap-6 ${
-              availableSensors.hasTemp && availableSensors.hasHumidity && availableSensors.hasPM
-                ? 'md:grid-cols-3'
-                : availableSensors.hasPM
-                  ? 'md:grid-cols-1 max-w-md mx-auto'
-                  : 'md:grid-cols-2'
-            }`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {availableSensors.hasTemp && currentReading.temperature !== undefined && (
                 <WeatherGauge
                   label="Temperature"
@@ -340,61 +334,40 @@ const Index = () => {
                 />
               )}
 
-              {availableSensors.hasPM && (
-                <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-                  <CardContent className="p-8">
-                    <div className="space-y-6">
-                      {/* Header */}
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          Air Quality
-                        </div>
-                        <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/30 shadow-sm">
-                          <Cloud className="w-6 h-6 text-purple-600" />
-                        </div>
-                      </div>
+              {currentReading.pm1 !== undefined && currentReading.pm1 > 0 && (
+                <WeatherGauge
+                  label="PM1.0"
+                  value={currentReading.pm1}
+                  unit="µg/m³"
+                  icon={<Cloud className="w-6 h-6" />}
+                  color="text-purple-600"
+                  secondaryColor="bg-purple-50 dark:bg-purple-950/30"
+                  showAirQualityScale={true}
+                />
+              )}
 
-                      {/* PM1 */}
-                      {currentReading.pm1 !== undefined && currentReading.pm1 > 0 && (
-                        <div className="space-y-1 pb-4 border-b border-slate-100 dark:border-slate-800">
-                          <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM1.0</div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-3xl font-bold text-purple-600">
-                              {currentReading.pm1.toFixed(1)}
-                            </span>
-                            <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
-                          </div>
-                        </div>
-                      )}
+              {currentReading.pm25 !== undefined && currentReading.pm25 > 0 && (
+                <WeatherGauge
+                  label="PM2.5"
+                  value={currentReading.pm25}
+                  unit="µg/m³"
+                  icon={<Cloud className="w-6 h-6" />}
+                  color="text-purple-600"
+                  secondaryColor="bg-purple-50 dark:bg-purple-950/30"
+                  showAirQualityScale={true}
+                />
+              )}
 
-                      {/* PM2.5 */}
-                      {currentReading.pm25 !== undefined && currentReading.pm25 > 0 && (
-                        <div className={`space-y-1 ${(currentReading.pm10 && currentReading.pm10 > 0) ? 'pb-4 border-b border-slate-100 dark:border-slate-800' : ''}`}>
-                          <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM2.5</div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-3xl font-bold text-purple-600">
-                              {currentReading.pm25.toFixed(1)}
-                            </span>
-                            <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* PM10 */}
-                      {currentReading.pm10 !== undefined && currentReading.pm10 > 0 && (
-                        <div className="space-y-1">
-                          <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">PM10</div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-3xl font-bold text-purple-600">
-                              {currentReading.pm10.toFixed(1)}
-                            </span>
-                            <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">µg/m³</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+              {currentReading.pm10 !== undefined && currentReading.pm10 > 0 && (
+                <WeatherGauge
+                  label="PM10"
+                  value={currentReading.pm10}
+                  unit="µg/m³"
+                  icon={<Cloud className="w-6 h-6" />}
+                  color="text-purple-600"
+                  secondaryColor="bg-purple-50 dark:bg-purple-950/30"
+                  showAirQualityScale={true}
+                />
               )}
             </div>
 
