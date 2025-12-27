@@ -67,9 +67,11 @@ const Index = () => {
   );
   const [, setTick] = useState(0);
 
-  // Initialize visible sensors when detected sensors change
+  // Initialize visible sensors when detected sensors change (only once per station)
+  const [initialized, setInitialized] = React.useState(false);
+
   React.useEffect(() => {
-    if (detectedSensors) {
+    if (detectedSensors && !initialized) {
       if (visibleSensorsLastHour.length === 0) {
         setVisibleSensorsLastHour(detectedSensors.supported);
       }
@@ -79,8 +81,9 @@ const Index = () => {
       if (visibleSensorsTable.length === 0) {
         setVisibleSensorsTable(detectedSensors.supported);
       }
+      setInitialized(true);
     }
-  }, [detectedSensors, visibleSensorsLastHour.length, visibleSensors24Hour.length, visibleSensorsTable.length, setVisibleSensorsLastHour, setVisibleSensors24Hour, setVisibleSensorsTable]);
+  }, [detectedSensors, initialized, visibleSensorsLastHour.length, visibleSensors24Hour.length, visibleSensorsTable.length, setVisibleSensorsLastHour, setVisibleSensors24Hour, setVisibleSensorsTable]);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
