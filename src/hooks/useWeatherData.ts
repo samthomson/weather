@@ -135,17 +135,32 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
         const readings: WeatherReading[] = [];
         const flaggedReadings: FlaggedReading[] = [];
         const seenTimestamps = new Set<number>();
+        let previousPM1: number | null = null;
         let previousPM25: number | null = null;
+        let previousPM10: number | null = null;
 
         for (const event of sorted) {
           if (!seenTimestamps.has(event.created_at)) {
             const parsed = parseWeatherTags(event.tags);
             if (parsed) {
+              let pm1Value = parsed.pm1!;
               let pm25Value = parsed.pm25!;
-              let isFlagged = false;
+              let pm10Value = parsed.pm10!;
 
-              // Check if PM2.5 is more than 5x the previous valid value
-              // Only flag if previous PM2.5 was valid (not 0)
+              // Check PM1 for anomalies
+              if (previousPM1 !== null && previousPM1 > 0 && pm1Value > previousPM1 * 5) {
+                flaggedReadings.push({
+                  sensor: 'PM1',
+                  value: pm1Value,
+                  timestamp: event.created_at,
+                  eventId: event.id,
+                  rawEvent: JSON.stringify(event, null, 2),
+                  reason: `Value is ${(pm1Value / previousPM1).toFixed(1)}x previous reading (${previousPM1.toFixed(1)} µg/m³)`,
+                });
+                pm1Value = 0; // Will be treated as null in charts
+              }
+
+              // Check PM2.5 for anomalies
               if (previousPM25 !== null && previousPM25 > 0 && pm25Value > previousPM25 * 5) {
                 flaggedReadings.push({
                   sensor: 'PM2.5',
@@ -155,27 +170,37 @@ export function useWeatherData(relayUrl: string, authorPubkey: string) {
                   rawEvent: JSON.stringify(event, null, 2),
                   reason: `Value is ${(pm25Value / previousPM25).toFixed(1)}x previous reading (${previousPM25.toFixed(1)} µg/m³)`,
                 });
-                isFlagged = true;
                 pm25Value = 0; // Will be treated as null in charts
+              }
+
+              // Check PM10 for anomalies
+              if (previousPM10 !== null && previousPM10 > 0 && pm10Value > previousPM10 * 5) {
+                flaggedReadings.push({
+                  sensor: 'PM10',
+                  value: pm10Value,
+                  timestamp: event.created_at,
+                  eventId: event.id,
+                  rawEvent: JSON.stringify(event, null, 2),
+                  reason: `Value is ${(pm10Value / previousPM10).toFixed(1)}x previous reading (${previousPM10.toFixed(1)} µg/m³)`,
+                });
+                pm10Value = 0; // Will be treated as null in charts
               }
 
               readings.push({
                 temperature: parsed.temperature!,
                 humidity: parsed.humidity!,
-                pm1: parsed.pm1!,
+                pm1: pm1Value,
                 pm25: pm25Value,
-                pm10: parsed.pm10!,
+                pm10: pm10Value,
                 timestamp: event.created_at,
                 eventId: event.id,
                 rawEvent: JSON.stringify(event, null, 2),
               });
 
-              // Update previous PM2.5 only if:
-              // 1. Not flagged as erroneous
-              // 2. Value is greater than 0 (valid reading)
-              if (!isFlagged && pm25Value > 0) {
-                previousPM25 = pm25Value;
-              }
+              // Update previous values only if valid (not flagged and > 0)
+              if (pm1Value > 0) previousPM1 = pm1Value;
+              if (pm25Value > 0) previousPM25 = pm25Value;
+              if (pm10Value > 0) previousPM10 = pm10Value;
 
               seenTimestamps.add(event.created_at);
             }
