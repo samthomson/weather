@@ -1,5 +1,5 @@
 import { useSeoMeta } from '@unhead/react';
-import { AlertTriangle, Cloud, Droplets, Wind } from 'lucide-react';
+import { AlertTriangle, Cloud, Droplets, Wind, ChevronDown, Search } from 'lucide-react';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { useWeatherStations } from '@/hooks/useWeatherStations';
 import { WeatherGauge } from '@/components/WeatherGauge';
@@ -17,6 +17,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Table,
   TableBody,
@@ -66,6 +79,7 @@ const Index = () => {
     []
   );
   const [, setTick] = useState(0);
+  const [stationSearchOpen, setStationSearchOpen] = useState(false);
 
   // Initialize visible sensors when detected sensors change (only once per station)
   const [initialized, setInitialized] = React.useState(false);
@@ -202,25 +216,63 @@ const Index = () => {
       {stations && stations.length > 0 && (
         <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex gap-6 overflow-x-auto">
-              {stations.map((station) => {
-                const isActive = station.pubkey === activeStationPubkey;
-                return (
-                  <button
-                    key={station.pubkey}
-                    onClick={() => setSelectedStation(station.pubkey)}
-                    className={`
-                      py-3 font-medium transition-all whitespace-nowrap border-b-2
-                      ${isActive
-                        ? 'text-slate-900 dark:text-slate-100 border-slate-900 dark:border-slate-100'
-                        : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-100 hover:border-slate-300 dark:hover:border-slate-600'
-                      }
-                    `}
-                  >
-                    {station.name}
+            <div className="flex items-center justify-between gap-4 py-3">
+              <div className="flex gap-2 overflow-x-auto">
+                {stations.slice(0, 5).map((station) => {
+                  const isActive = station.pubkey === activeStationPubkey;
+                  return (
+                    <button
+                      key={station.pubkey}
+                      onClick={() => setSelectedStation(station.pubkey)}
+                      className={`
+                        px-4 py-2 rounded-full font-medium transition-all whitespace-nowrap text-sm
+                        ${isActive
+                          ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md'
+                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                        }
+                      `}
+                    >
+                      {station.name}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Station search dropdown */}
+              <Popover open={stationSearchOpen} onOpenChange={setStationSearchOpen}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-sm">
+                    <Search className="w-4 h-4 text-slate-500" />
+                    <span className="text-slate-600 dark:text-slate-400">All Stations</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </button>
-                );
-              })}
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-0" align="end">
+                  <Command>
+                    <CommandInput placeholder="Search stations..." />
+                    <CommandList>
+                      <CommandEmpty>No stations found.</CommandEmpty>
+                      <CommandGroup>
+                        {stations.map((station) => (
+                          <CommandItem
+                            key={station.pubkey}
+                            onSelect={() => {
+                              setSelectedStation(station.pubkey);
+                              setStationSearchOpen(false);
+                            }}
+                            className="flex flex-col items-start gap-1 py-3"
+                          >
+                            <div className="font-semibold">{station.name}</div>
+                            {station.location && (
+                              <div className="text-xs text-slate-500">📍 {station.location}</div>
+                            )}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
@@ -229,11 +281,11 @@ const Index = () => {
       {/* Single station header (when only one station) */}
       {(!stations || stations.length <= 1) && stationMetadata && (
         <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+              <div className="px-4 py-2 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-medium text-sm shadow-md">
                 {stationMetadata.name || 'Weather Station'}
-              </h1>
+              </div>
               {stationMetadata.location && (
                 <span className="text-sm text-slate-600 dark:text-slate-400">
                   📍 {stationMetadata.location}
