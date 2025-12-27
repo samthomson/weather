@@ -6,7 +6,7 @@ import { WeatherGauge } from '@/components/WeatherGauge';
 import { WeatherChart } from '@/components/WeatherChart';
 import { SensorToggle } from '@/components/SensorToggle';
 import { UnsupportedSensors } from '@/components/UnsupportedSensors';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
 import * as React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
