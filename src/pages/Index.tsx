@@ -167,76 +167,99 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Header */}
       <div className="border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
-                  <Cloud className="w-7 h-7 text-white" />
-                </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
-                  Weather Stations
-                </h1>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Top row - App branding and units */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md shadow-blue-500/20">
+                <Cloud className="w-5 h-5 text-white" />
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 ml-16">
-                Real-time environmental monitoring from Nostr relay
-              </p>
+              <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">
+                Weather Stations
+              </span>
             </div>
-            <div className="flex gap-3">
-              {/* Station selector */}
-              {stations && stations.length > 1 && (
-                <Select
-                  value={activeStationPubkey || undefined}
-                  onValueChange={(value) => setSelectedStation(value)}
-                >
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Select station..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {stations.map((station) => (
-                      <SelectItem key={station.pubkey} value={station.pubkey}>
-                        {station.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
 
-              {/* Units selector */}
-              <Select value={units} onValueChange={(value: 'metric' | 'imperial') => setUnits(value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="metric">
-                    <span className="flex items-center gap-2">
-                      <span>🥖</span>
-                      <span>Metric</span>
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="imperial">
-                    <span className="flex items-center gap-2">
-                      <span>🍔</span>
-                      <span>Imperial</span>
-                    </span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Units selector */}
+            <Select value={units} onValueChange={(value: 'metric' | 'imperial') => setUnits(value)}>
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="metric">
+                  <span className="flex items-center gap-2">
+                    <span>🥖</span>
+                    <span>Metric</span>
+                  </span>
+                </SelectItem>
+                <SelectItem value="imperial">
+                  <span className="flex items-center gap-2">
+                    <span>🍔</span>
+                    <span>Imperial</span>
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Station info bar */}
-          {stationMetadata && (
-            <div className="mt-4 ml-16 text-sm text-slate-600 dark:text-slate-400">
-              <span className="font-semibold">{stationMetadata.name || 'Unknown Station'}</span>
-              {stationMetadata.location && (
-                <> · 📍 {stationMetadata.location}</>
-              )}
-              {stationMetadata.elevation && (
-                <> · ⛰️ {stationMetadata.elevation}m</>
-              )}
+          {/* Station info - prominent */}
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-800/30 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  {stations && stations.length > 1 && (
+                    <Select
+                      value={activeStationPubkey || undefined}
+                      onValueChange={(value) => setSelectedStation(value)}
+                    >
+                      <SelectTrigger className="w-64 bg-white dark:bg-slate-900 border-2">
+                        <SelectValue placeholder="Select station..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {stations.map((station) => (
+                          <SelectItem key={station.pubkey} value={station.pubkey}>
+                            <div className="flex flex-col">
+                              <span className="font-semibold">{station.name}</span>
+                              {station.location && (
+                                <span className="text-xs text-slate-500">📍 {station.location}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {(!stations || stations.length <= 1) && stationMetadata && (
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                      {stationMetadata.name || 'Weather Station'}
+                    </h1>
+                  )}
+                </div>
+
+                {stationMetadata && (
+                  <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+                    {stationMetadata.location && (
+                      <span className="flex items-center gap-1.5">
+                        <span>📍</span>
+                        <span>{stationMetadata.location}</span>
+                      </span>
+                    )}
+                    {stationMetadata.elevation && (
+                      <span className="flex items-center gap-1.5">
+                        <span>⛰️</span>
+                        <span>{stationMetadata.elevation}m elevation</span>
+                      </span>
+                    )}
+                    {stationMetadata.sensors.length > 0 && (
+                      <span className="flex items-center gap-1.5">
+                        <span>📡</span>
+                        <span>{stationMetadata.sensors.length} sensors</span>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
