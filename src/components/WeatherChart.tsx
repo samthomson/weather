@@ -32,6 +32,7 @@ interface WeatherChartProps {
   availableSensors: string[];
   visibleSensors: string[];
   onSensorToggle: (sensor: string, visible: boolean) => void;
+  onSetAll?: (sensors: string[]) => void;
 }
 
 export function WeatherChart({
@@ -41,6 +42,7 @@ export function WeatherChart({
   availableSensors,
   visibleSensors,
   onSensorToggle,
+  onSetAll,
 }: WeatherChartProps) {
   if (data.length === 0) {
     return (
@@ -362,6 +364,7 @@ export function WeatherChart({
             availableSensors={availableSensors}
             visibleSensors={visibleSensors}
             onToggle={onSensorToggle}
+            onSetAll={onSetAll}
           />
         </div>
       </CardHeader>

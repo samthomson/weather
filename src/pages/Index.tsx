@@ -416,6 +416,7 @@ const Index = () => {
                     setVisibleSensorsLastHour(visibleSensorsLastHour.filter(s => s !== sensor));
                   }
                 }}
+                onSetAll={setVisibleSensorsLastHour}
               />
               <WeatherChart
                 data={last24HourReadings}
@@ -430,6 +431,7 @@ const Index = () => {
                     setVisibleSensors24Hour(visibleSensors24Hour.filter(s => s !== sensor));
                   }
                 }}
+                onSetAll={setVisibleSensors24Hour}
               />
             </div>
 
@@ -456,6 +458,7 @@ const Index = () => {
                               setVisibleSensorsTable(visibleSensorsTable.filter(s => s !== sensor));
                             }
                           }}
+                          onSetAll={setVisibleSensorsTable}
                         />
                       )}
                     </div>
