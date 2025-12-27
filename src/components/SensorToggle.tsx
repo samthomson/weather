@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings2 } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -18,6 +18,22 @@ interface SensorToggleProps {
 export function SensorToggle({ availableSensors, visibleSensors, onToggle }: SensorToggleProps) {
   const [open, setOpen] = useState(false);
 
+  const handleSelectAll = () => {
+    availableSensors.forEach(sensor => {
+      if (!visibleSensors.includes(sensor)) {
+        onToggle(sensor, true);
+      }
+    });
+  };
+
+  const handleSelectNone = () => {
+    availableSensors.forEach(sensor => {
+      if (visibleSensors.includes(sensor)) {
+        onToggle(sensor, false);
+      }
+    });
+  };
+
   const getSensorLabel = (sensor: string): string => {
     const labels: Record<string, string> = {
       'temp': 'Temperature',
@@ -32,9 +48,9 @@ export function SensorToggle({ availableSensors, visibleSensors, onToggle }: Sen
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Settings2 className="w-4 h-4" />
-          <span className="hidden sm:inline">Sensors</span>
+        <Button variant="outline" size="sm" className="gap-1.5">
+          <span>Sensors</span>
+          <ChevronDown className="w-3.5 h-3.5 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-56" align="end">
@@ -43,18 +59,14 @@ export function SensorToggle({ availableSensors, visibleSensors, onToggle }: Sen
             <div className="font-semibold text-sm">Visible Sensors</div>
             <div className="flex gap-1">
               <button
-                onClick={() => {
-                  availableSensors.forEach(sensor => onToggle(sensor, true));
-                }}
+                onClick={handleSelectAll}
                 className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline"
               >
                 All
               </button>
               <span className="text-xs text-slate-300 dark:text-slate-600">|</span>
               <button
-                onClick={() => {
-                  availableSensors.forEach(sensor => onToggle(sensor, false));
-                }}
+                onClick={handleSelectNone}
                 className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline"
               >
                 None
