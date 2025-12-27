@@ -39,7 +39,28 @@ export function SensorToggle({ availableSensors, visibleSensors, onToggle }: Sen
       </PopoverTrigger>
       <PopoverContent className="w-56" align="end">
         <div className="space-y-4">
-          <div className="font-semibold text-sm">Visible Sensors</div>
+          <div className="flex items-center justify-between">
+            <div className="font-semibold text-sm">Visible Sensors</div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => {
+                  availableSensors.forEach(sensor => onToggle(sensor, true));
+                }}
+                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline"
+              >
+                All
+              </button>
+              <span className="text-xs text-slate-300 dark:text-slate-600">|</span>
+              <button
+                onClick={() => {
+                  availableSensors.forEach(sensor => onToggle(sensor, false));
+                }}
+                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline"
+              >
+                None
+              </button>
+            </div>
+          </div>
           <div className="space-y-3">
             {availableSensors.map((sensor) => (
               <div key={sensor} className="flex items-center space-x-2">
