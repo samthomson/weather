@@ -704,7 +704,7 @@ const Index = () => {
                 <a href="wss://relay.samt.st" className="text-blue-600 dark:text-blue-400 hover:underline">
                   wss://relay.samt.st
                 </a>
-                {' · '}Kinds 16158 (metadata) & 4223 (readings)
+                {' · '}Kinds 16158 (weather station info) & 4223 (weather station sensor readings)
               </p>
               <p>
                 Made by{' '}
