@@ -11,8 +11,10 @@ export interface WeatherReading {
   timestamp: number; // Unix timestamp
   eventId?: string; // Nostr event ID
   rawEvent?: string; // Raw event JSON
+  // Sensor models (device names)
+  sensorModels?: Record<string, string>; // e.g., { temp: "DHT11", pm25: "PMS5003" }
   // Dynamic sensor data
-  [key: string]: number | string | undefined;
+  [key: string]: number | string | undefined | Record<string, string>;
 }
 
 export interface FlaggedReading {
@@ -49,8 +51,11 @@ function parseWeatherTags(tags: string[][]): {
 } {
   const reading: Partial<WeatherReading> = {};
   const sensorTypes: string[] = [];
+  const sensorModels: Record<string, string> = {};
 
-  for (const [name, value] of tags) {
+  for (const tag of tags) {
+    const [name, value, model] = tag;
+
     // Skip non-sensor tags
     if (IGNORED_TAGS.includes(name)) continue;
 
@@ -59,6 +64,11 @@ function parseWeatherTags(tags: string[][]): {
 
     // Track all sensor types found
     sensorTypes.push(name);
+
+    // Store sensor model if provided (3rd parameter)
+    if (model) {
+      sensorModels[name] = model;
+    }
 
     // Parse known sensors
     switch (name) {
@@ -85,6 +95,8 @@ function parseWeatherTags(tags: string[][]): {
         reading[name] = numValue;
     }
   }
+
+  reading.sensorModels = sensorModels;
 
   return { reading, sensorTypes };
 }
