@@ -15,6 +15,7 @@ interface WeatherGaugeProps {
   color: string; // Tailwind color class
   secondaryColor?: string; // For the background
   showAirQualityScale?: boolean; // Show PM2.5 air quality scale
+  sensorName?: string; // Name of the physical sensor
 }
 
 // PM2.5 Air Quality Scale
@@ -58,6 +59,7 @@ export function WeatherGauge({
   color,
   secondaryColor = 'bg-slate-100 dark:bg-slate-800',
   showAirQualityScale = false,
+  sensorName,
 }: WeatherGaugeProps) {
   const airQuality = showAirQualityScale ? getAirQualityInfo(value) : null;
   const displayColor = airQuality ? airQuality.color : color;
@@ -130,6 +132,15 @@ export function WeatherGauge({
                 <span>35</span>
                 <span>55</span>
                 <span>70+</span>
+              </div>
+            </div>
+          )}
+
+          {/* Sensor name (if provided) */}
+          {sensorName && (
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                Sensor: <span className="font-mono">{sensorName}</span>
               </div>
             </div>
           )}

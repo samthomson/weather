@@ -384,6 +384,7 @@ const Index = () => {
                   icon={<Wind className="w-6 h-6 text-red-600" />}
                   color="text-red-600"
                   secondaryColor="bg-red-50 dark:bg-red-950/30"
+                  sensorName="temp"
                 />
               )}
 
@@ -395,6 +396,7 @@ const Index = () => {
                   icon={<Droplets className="w-6 h-6 text-blue-600" />}
                   color="text-blue-600"
                   secondaryColor="bg-blue-50 dark:bg-blue-950/30"
+                  sensorName="humidity"
                 />
               )}
 
@@ -407,6 +409,7 @@ const Index = () => {
                   color="text-purple-600"
                   secondaryColor="bg-purple-50 dark:bg-purple-950/30"
                   showAirQualityScale={true}
+                  sensorName="pm1"
                 />
               )}
 
@@ -419,6 +422,7 @@ const Index = () => {
                   color="text-purple-600"
                   secondaryColor="bg-purple-50 dark:bg-purple-950/30"
                   showAirQualityScale={true}
+                  sensorName="pm25"
                 />
               )}
 
@@ -431,6 +435,7 @@ const Index = () => {
                   color="text-purple-600"
                   secondaryColor="bg-purple-50 dark:bg-purple-950/30"
                   showAirQualityScale={true}
+                  sensorName="pm10"
                 />
               )}
 
@@ -470,6 +475,13 @@ const Index = () => {
                           <span>0</span>
                           <span>500</span>
                           <span>1000</span>
+                        </div>
+                      </div>
+
+                      {/* Sensor name */}
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Sensor: <span className="font-mono">air_quality</span>
                         </div>
                       </div>
                     </div>
@@ -692,7 +704,7 @@ const Index = () => {
                 <a href="wss://relay.samt.st" className="text-blue-600 dark:text-blue-400 hover:underline">
                   wss://relay.samt.st
                 </a>
-                {' · '}Kind 4223
+                {' · '}Kinds 16158 (metadata) & 4223 (readings)
               </p>
               <p>
                 Made by{' '}
