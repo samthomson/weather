@@ -31,6 +31,7 @@ export interface FlaggedReading {
 
 export interface WeatherStationMetadata {
   name?: string;
+  description?: string;
   location?: string; // "lat,lon"
   elevation?: number; // meters
   sensors: string[];
@@ -115,12 +116,14 @@ function parseWeatherTags(tags: string[][]): {
 
 function parseStationMetadata(tags: string[][]): WeatherStationMetadata {
   const nameTag = tags.find(([name]) => name === 'name');
+  const descriptionTag = tags.find(([name]) => name === 'description');
   const locationTag = tags.find(([name]) => name === 'location');
   const elevationTag = tags.find(([name]) => name === 'elevation');
   const sensorTags = tags.filter(([name]) => name === 'sensor');
 
   return {
     name: nameTag?.[1],
+    description: descriptionTag?.[1],
     location: locationTag?.[1],
     elevation: elevationTag ? parseFloat(elevationTag[1]) : undefined,
     sensors: sensorTags.map(([, sensor]) => sensor),

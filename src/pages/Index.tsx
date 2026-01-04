@@ -357,6 +357,13 @@ const Index = () => {
           </Card>
         ) : (
           <div className="space-y-8">
+            {/* Station Description */}
+            {stationMetadata?.description && (
+              <div className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                {stationMetadata.description}
+              </div>
+            )}
+
             {/* Unsupported Sensors Alert */}
             {detectedSensors && detectedSensors.unsupported.length > 0 && (
               <UnsupportedSensors sensors={detectedSensors.unsupported} />
