@@ -31,6 +31,15 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { ExternalLink } from 'lucide-react';
+import {
   Table,
   TableBody,
   TableCell,
@@ -359,18 +368,39 @@ const Index = () => {
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                   Current Conditions
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Last updated: <span className="font-semibold text-slate-900 dark:text-slate-100">
-                    {new Date(currentReading.timestamp * 1000).toLocaleString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true
-                    })}
-                  </span> <span className="text-slate-500">({getRelativeTime(currentReading.timestamp)})</span>
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Last updated: <span className="font-semibold text-slate-900 dark:text-slate-100">
+                      {new Date(currentReading.timestamp * 1000).toLocaleString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </span> <span className="text-slate-500">({getRelativeTime(currentReading.timestamp)})</span>
+                  </p>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center gap-1">
+                        <span className="text-xs underline">View event</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Latest Reading Event</DialogTitle>
+                        <DialogDescription>
+                          Event ID: {currentReading.eventId}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <pre className="p-4 bg-slate-100 dark:bg-slate-900 rounded-lg text-xs overflow-x-auto">
+                        {currentReading.rawEvent}
+                      </pre>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
             </div>
 
@@ -607,6 +637,9 @@ const Index = () => {
               <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                 Trends
               </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                💡 Tip: Use the "Sensors" dropdown on each chart to show/hide sensors. Light and rain use the right Y-axis due to their larger scale.
+              </p>
             </div>
 
             <div className="space-y-6">
