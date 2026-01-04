@@ -539,7 +539,7 @@ const Index = () => {
                          '☀️ Direct sunlight'}
                       </div>
 
-                      {/* Light scale bar */}
+                      {/* Light scale bar - logarithmic */}
                       <div className="space-y-2">
                         <div className="relative h-2 bg-gradient-to-r from-slate-800 via-yellow-500 to-yellow-200 rounded-full">
                           <div
@@ -552,6 +552,7 @@ const Index = () => {
                         </div>
                         <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                           <span>0</span>
+                          <span>10</span>
                           <span>100</span>
                           <span>1k</span>
                           <span>10k</span>
