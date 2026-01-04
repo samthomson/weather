@@ -554,21 +554,35 @@ const Index = () => {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <div className="text-5xl font-bold text-cyan-600">
-                          {currentReading.rain >= 4000 ? '☀️ Dry' :
-                           currentReading.rain >= 3000 ? '🌤️ Mostly Dry' :
-                           currentReading.rain >= 2000 ? '🌦️ Light Rain' :
-                           currentReading.rain >= 1000 ? '🌧️ Raining' :
-                           '⛈️ Heavy Rain'}
-                        </div>
-                        <div className="text-sm text-slate-600 dark:text-slate-400">
-                          Raw: {currentReading.rain.toFixed(0)} / 4095
-                        </div>
+                        {(() => {
+                          // Invert: 4095=0%, 0=100%
+                          const rainPercent = ((4095 - currentReading.rain) / 4095) * 100;
+                          return (
+                            <>
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-6xl font-bold text-cyan-600">
+                                  {rainPercent.toFixed(1)}
+                                </span>
+                                <span className="text-2xl font-semibold text-slate-400 dark:text-slate-500">
+                                  %
+                                </span>
+                              </div>
+                              <div className="text-sm text-slate-600 dark:text-slate-400">
+                                {rainPercent < 10 ? '☀️ Dry' :
+                                 rainPercent < 30 ? '🌤️ Slightly Wet' :
+                                 rainPercent < 60 ? '🌦️ Light Rain' :
+                                 rainPercent < 80 ? '🌧️ Raining' :
+                                 '⛈️ Heavy Rain'}
+                                {' · '}Raw: {currentReading.rain.toFixed(0)}
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
-                      <div className="relative h-3 bg-gradient-to-r from-cyan-600 to-slate-200 rounded-full overflow-hidden">
+                      <div className="relative h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div
-                          className="absolute top-0 left-0 h-full bg-slate-200 dark:bg-slate-700"
-                          style={{ width: `${(currentReading.rain / 4095) * 100}%` }}
+                          className="absolute top-0 left-0 h-full bg-gradient-to-r from-slate-200 via-cyan-400 to-cyan-600 transition-all duration-500"
+                          style={{ width: `${((4095 - currentReading.rain) / 4095) * 100}%` }}
                         />
                       </div>
                       <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -774,7 +788,7 @@ const Index = () => {
                             )}
                             {visibleSensorsTable.includes('rain') && (
                               <TableCell className="font-semibold">
-                                {reading.rain !== undefined ? reading.rain.toFixed(0) : '-'}
+                                {reading.rain !== undefined ? `${(((4095 - reading.rain) / 4095) * 100).toFixed(1)}%` : '-'}
                               </TableCell>
                             )}
                             <TableCell>

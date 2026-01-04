@@ -144,7 +144,8 @@ export function WeatherChart({
 
     rainData = timeSlots.map(ts => {
       const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
-      return reading?.rain !== undefined ? reading.rain : null;
+      // Convert to percentage: 4095=0%, 0=100%
+      return reading?.rain !== undefined ? ((4095 - reading.rain) / 4095) * 100 : null;
     });
   } else if (isLastHourChart) {
     // For last hour chart: create 1-minute interval time slots (60 slots for 1 hour)
@@ -211,7 +212,8 @@ export function WeatherChart({
 
     rainData = timeSlots.map(ts => {
       const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
-      return reading?.rain !== undefined ? reading.rain : null;
+      // Convert to percentage: 4095=0%, 0=100%
+      return reading?.rain !== undefined ? ((4095 - reading.rain) / 4095) * 100 : null;
     });
   } else {
     // Fallback: use all data points as-is
@@ -234,7 +236,7 @@ export function WeatherChart({
     airQualityData = reversedData.map((r) => r.air_quality || null);
     pressureData = reversedData.map((r) => r.pressure || null);
     lightData = reversedData.map((r) => r.light || null);
-    rainData = reversedData.map((r) => r.rain !== undefined ? r.rain : null);
+    rainData = reversedData.map((r) => r.rain !== undefined ? ((4095 - r.rain) / 4095) * 100 : null);
   }
 
   const datasets = [];
@@ -386,7 +388,7 @@ export function WeatherChart({
 
   if (visibleSensors.includes('rain')) {
     datasets.push({
-      label: 'Rain (0=wet, 4095=dry)',
+      label: 'Rain (%)',
       data: rainData,
       borderColor: 'rgb(6, 182, 212)',
       backgroundColor: 'rgba(6, 182, 212, 0.05)',
@@ -399,7 +401,7 @@ export function WeatherChart({
       tension: 0.4,
       fill: false,
       spanGaps: false,
-      yAxisID: 'y1', // Use right axis for large values
+      yAxisID: 'y', // Use left axis now (0-100%)
     });
   }
 
