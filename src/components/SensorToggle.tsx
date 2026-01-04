@@ -41,6 +41,9 @@ export function SensorToggle({ availableSensors, visibleSensors, onToggle, onSet
       'pm25': 'PM2.5',
       'pm10': 'PM10',
       'air_quality': 'Air Quality Index',
+      'pressure': 'Pressure',
+      'light': 'Light',
+      'rain': 'Rain Sensor',
     };
     return labels[sensor] || sensor.toUpperCase();
   };

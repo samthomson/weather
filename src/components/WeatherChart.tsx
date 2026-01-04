@@ -75,6 +75,9 @@ export function WeatherChart({
   let pm25Data: (number | null)[];
   let pm10Data: (number | null)[];
   let airQualityData: (number | null)[];
+  let pressureData: (number | null)[];
+  let lightData: (number | null)[];
+  let rainData: (number | null)[];
 
   if (is24HourChart) {
     // For 24-hour chart: create exactly 24 hourly time slots
@@ -128,6 +131,21 @@ export function WeatherChart({
       const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
       return reading?.air_quality || null;
     });
+
+    pressureData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
+      return reading?.pressure || null;
+    });
+
+    lightData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
+      return reading?.light || null;
+    });
+
+    rainData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 1800);
+      return reading?.rain !== undefined ? reading.rain : null;
+    });
   } else if (isLastHourChart) {
     // For last hour chart: create 1-minute interval time slots (60 slots for 1 hour)
     const now = Math.floor(Date.now() / 1000);
@@ -180,6 +198,21 @@ export function WeatherChart({
       const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
       return reading?.air_quality || null;
     });
+
+    pressureData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
+      return reading?.pressure || null;
+    });
+
+    lightData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
+      return reading?.light || null;
+    });
+
+    rainData = timeSlots.map(ts => {
+      const reading = data.find(r => Math.abs(r.timestamp - ts) < 30);
+      return reading?.rain !== undefined ? reading.rain : null;
+    });
   } else {
     // Fallback: use all data points as-is
     const reversedData = data.slice().reverse();
@@ -199,6 +232,9 @@ export function WeatherChart({
     pm25Data = reversedData.map((r) => r.pm25 === 0 ? null : r.pm25);
     pm10Data = reversedData.map((r) => r.pm10 === 0 ? null : r.pm10);
     airQualityData = reversedData.map((r) => r.air_quality || null);
+    pressureData = reversedData.map((r) => r.pressure || null);
+    lightData = reversedData.map((r) => r.light || null);
+    rainData = reversedData.map((r) => r.rain !== undefined ? r.rain : null);
   }
 
   const datasets = [];
@@ -303,6 +339,60 @@ export function WeatherChart({
       pointRadius: 0,
       pointHoverRadius: 6,
       pointHoverBackgroundColor: 'rgb(34, 197, 94)',
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      tension: 0.4,
+      fill: false,
+      spanGaps: false,
+    });
+  }
+
+  if (visibleSensors.includes('pressure')) {
+    datasets.push({
+      label: 'Pressure (hPa)',
+      data: pressureData,
+      borderColor: 'rgb(99, 102, 241)',
+      backgroundColor: 'rgba(99, 102, 241, 0.05)',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 6,
+      pointHoverBackgroundColor: 'rgb(99, 102, 241)',
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      tension: 0.4,
+      fill: false,
+      spanGaps: false,
+    });
+  }
+
+  if (visibleSensors.includes('light')) {
+    datasets.push({
+      label: 'Light (lux)',
+      data: lightData,
+      borderColor: 'rgb(234, 179, 8)',
+      backgroundColor: 'rgba(234, 179, 8, 0.05)',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 6,
+      pointHoverBackgroundColor: 'rgb(234, 179, 8)',
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      tension: 0.4,
+      fill: false,
+      spanGaps: false,
+    });
+  }
+
+  if (visibleSensors.includes('rain')) {
+    datasets.push({
+      label: 'Rain (0=wet, 4095=dry)',
+      data: rainData,
+      borderColor: 'rgb(6, 182, 212)',
+      backgroundColor: 'rgba(6, 182, 212, 0.05)',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 6,
+      pointHoverBackgroundColor: 'rgb(6, 182, 212)',
       pointHoverBorderColor: '#fff',
       pointHoverBorderWidth: 2,
       tension: 0.4,

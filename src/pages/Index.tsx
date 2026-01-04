@@ -1,5 +1,5 @@
 import { useSeoMeta } from '@unhead/react';
-import { AlertTriangle, Cloud, Droplets, Wind, ChevronDown, Search } from 'lucide-react';
+import { AlertTriangle, Cloud, Droplets, Wind, ChevronDown, Search, Gauge, Sun, CloudRain } from 'lucide-react';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { useWeatherStations } from '@/hooks/useWeatherStations';
 import { WeatherGauge } from '@/components/WeatherGauge';
@@ -439,6 +439,42 @@ const Index = () => {
                 />
               )}
 
+              {currentReading.pressure !== undefined && currentReading.pressure > 0 && (
+                <WeatherGauge
+                  label="Pressure"
+                  value={currentReading.pressure}
+                  unit="hPa"
+                  icon={<Gauge className="w-6 h-6 text-indigo-600" />}
+                  color="text-indigo-600"
+                  secondaryColor="bg-indigo-50 dark:bg-indigo-950/30"
+                  sensorName={currentReading.sensorModels?.pressure || 'pressure'}
+                />
+              )}
+
+              {currentReading.light !== undefined && currentReading.light > 0 && (
+                <WeatherGauge
+                  label="Light"
+                  value={currentReading.light}
+                  unit="lux"
+                  icon={<Sun className="w-6 h-6 text-yellow-600" />}
+                  color="text-yellow-600"
+                  secondaryColor="bg-yellow-50 dark:bg-yellow-950/30"
+                  sensorName={currentReading.sensorModels?.light || 'light'}
+                />
+              )}
+
+              {currentReading.rain !== undefined && (
+                <WeatherGauge
+                  label="Rain Sensor"
+                  value={currentReading.rain}
+                  unit=""
+                  icon={<CloudRain className="w-6 h-6 text-cyan-600" />}
+                  color="text-cyan-600"
+                  secondaryColor="bg-cyan-50 dark:bg-cyan-950/30"
+                  sensorName={currentReading.sensorModels?.rain || 'rain'}
+                />
+              )}
+
               {currentReading.air_quality !== undefined && currentReading.air_quality > 0 && (
                 <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
                   <CardContent className="p-8">
@@ -569,6 +605,9 @@ const Index = () => {
                           {visibleSensorsTable.includes('pm25') && <TableHead>PM2.5</TableHead>}
                           {visibleSensorsTable.includes('pm10') && <TableHead>PM10</TableHead>}
                           {visibleSensorsTable.includes('air_quality') && <TableHead>Air Quality</TableHead>}
+                          {visibleSensorsTable.includes('pressure') && <TableHead>Pressure</TableHead>}
+                          {visibleSensorsTable.includes('light') && <TableHead>Light</TableHead>}
+                          {visibleSensorsTable.includes('rain') && <TableHead>Rain</TableHead>}
                           <TableHead>Event</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -612,6 +651,21 @@ const Index = () => {
                             {visibleSensorsTable.includes('air_quality') && (
                               <TableCell className="font-semibold">
                                 {(reading.air_quality || 0).toFixed(0)}
+                              </TableCell>
+                            )}
+                            {visibleSensorsTable.includes('pressure') && (
+                              <TableCell className="font-semibold">
+                                {(reading.pressure || 0).toFixed(1)} hPa
+                              </TableCell>
+                            )}
+                            {visibleSensorsTable.includes('light') && (
+                              <TableCell className="font-semibold">
+                                {(reading.light || 0).toFixed(1)} lux
+                              </TableCell>
+                            )}
+                            {visibleSensorsTable.includes('rain') && (
+                              <TableCell className="font-semibold">
+                                {reading.rain !== undefined ? reading.rain.toFixed(0) : '-'}
                               </TableCell>
                             )}
                             <TableCell>
