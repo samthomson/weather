@@ -440,39 +440,115 @@ const Index = () => {
               )}
 
               {currentReading.pressure !== undefined && currentReading.pressure > 0 && (
-                <WeatherGauge
-                  label="Pressure"
-                  value={currentReading.pressure}
-                  unit="hPa"
-                  icon={<Gauge className="w-6 h-6 text-indigo-600" />}
-                  color="text-indigo-600"
-                  secondaryColor="bg-indigo-50 dark:bg-indigo-950/30"
-                  sensorName={currentReading.sensorModels?.pressure || 'pressure'}
-                />
+                <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                  <CardContent className="p-8">
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Pressure
+                        </div>
+                        <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 shadow-sm">
+                          <Gauge className="w-6 h-6 text-indigo-600" />
+                        </div>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-6xl font-bold text-indigo-600">
+                          {currentReading.pressure.toFixed(1)}
+                        </span>
+                        <span className="text-2xl font-semibold text-slate-400 dark:text-slate-500">
+                          hPa
+                        </span>
+                      </div>
+                      <div className="text-sm text-slate-600 dark:text-slate-400">
+                        {currentReading.pressure < 1000 ? '🌧️ Low (possible rain)' :
+                         currentReading.pressure > 1020 ? '☀️ High (fair weather)' :
+                         '⛅ Normal'}
+                      </div>
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Sensor: <span className="font-mono">{currentReading.sensorModels?.pressure || 'pressure'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {currentReading.light !== undefined && currentReading.light > 0 && (
-                <WeatherGauge
-                  label="Light"
-                  value={currentReading.light}
-                  unit="lux"
-                  icon={<Sun className="w-6 h-6 text-yellow-600" />}
-                  color="text-yellow-600"
-                  secondaryColor="bg-yellow-50 dark:bg-yellow-950/30"
-                  sensorName={currentReading.sensorModels?.light || 'light'}
-                />
+                <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                  <CardContent className="p-8">
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Light
+                        </div>
+                        <div className="p-3 rounded-xl bg-yellow-50 dark:bg-yellow-950/30 shadow-sm">
+                          <Sun className="w-6 h-6 text-yellow-600" />
+                        </div>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-6xl font-bold text-yellow-600">
+                          {currentReading.light >= 1000 ? (currentReading.light / 1000).toFixed(1) : currentReading.light.toFixed(1)}
+                        </span>
+                        <span className="text-2xl font-semibold text-slate-400 dark:text-slate-500">
+                          {currentReading.light >= 1000 ? 'k' : ''} lux
+                        </span>
+                      </div>
+                      <div className="text-sm text-slate-600 dark:text-slate-400">
+                        {currentReading.light < 1 ? '🌑 Moonlight' :
+                         currentReading.light < 50 ? '🕯️ Very dim' :
+                         currentReading.light < 500 ? '💡 Indoor lighting' :
+                         currentReading.light < 10000 ? '🏢 Bright indoor' :
+                         '☀️ Direct sunlight'}
+                      </div>
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Sensor: <span className="font-mono">{currentReading.sensorModels?.light || 'light'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {currentReading.rain !== undefined && (
-                <WeatherGauge
-                  label="Rain Sensor"
-                  value={currentReading.rain}
-                  unit=""
-                  icon={<CloudRain className="w-6 h-6 text-cyan-600" />}
-                  color="text-cyan-600"
-                  secondaryColor="bg-cyan-50 dark:bg-cyan-950/30"
-                  sensorName={currentReading.sensorModels?.rain || 'rain'}
-                />
+                <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                  <CardContent className="p-8">
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Rain Sensor
+                        </div>
+                        <div className="p-3 rounded-xl bg-cyan-50 dark:bg-cyan-950/30 shadow-sm">
+                          <CloudRain className="w-6 h-6 text-cyan-600" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="text-5xl font-bold text-cyan-600">
+                          {currentReading.rain >= 4000 ? '☀️ Dry' :
+                           currentReading.rain >= 3000 ? '🌤️ Mostly Dry' :
+                           currentReading.rain >= 2000 ? '🌦️ Light Rain' :
+                           currentReading.rain >= 1000 ? '🌧️ Raining' :
+                           '⛈️ Heavy Rain'}
+                        </div>
+                        <div className="text-sm text-slate-600 dark:text-slate-400">
+                          Raw: {currentReading.rain.toFixed(0)} / 4095
+                        </div>
+                      </div>
+                      <div className="relative h-3 bg-gradient-to-r from-cyan-600 to-slate-200 rounded-full overflow-hidden">
+                        <div
+                          className="absolute top-0 left-0 h-full bg-slate-200 dark:bg-slate-700"
+                          style={{ width: `${(currentReading.rain / 4095) * 100}%` }}
+                        />
+                      </div>
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Sensor: <span className="font-mono">{currentReading.sensorModels?.rain || 'rain'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {currentReading.air_quality !== undefined && currentReading.air_quality > 0 && (

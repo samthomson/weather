@@ -380,6 +380,7 @@ export function WeatherChart({
       tension: 0.4,
       fill: false,
       spanGaps: false,
+      yAxisID: 'y1', // Use right axis for large values
     });
   }
 
@@ -398,6 +399,7 @@ export function WeatherChart({
       tension: 0.4,
       fill: false,
       spanGaps: false,
+      yAxisID: 'y1', // Use right axis for large values
     });
   }
 
@@ -459,10 +461,27 @@ export function WeatherChart({
         },
       },
       y: {
+        type: 'linear' as const,
+        position: 'left' as const,
         beginAtZero: false,
         grid: {
           color: 'rgba(0, 0, 0, 0.05)',
           drawBorder: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+          },
+          color: 'rgb(100, 116, 139)',
+          padding: 8,
+        },
+      },
+      y1: {
+        type: 'linear' as const,
+        position: 'right' as const,
+        beginAtZero: false,
+        grid: {
+          drawOnChartArea: false,
         },
         ticks: {
           font: {
