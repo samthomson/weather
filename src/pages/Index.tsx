@@ -525,19 +525,40 @@ const Index = () => {
                       </div>
                       <div className="flex items-baseline gap-2">
                         <span className="text-6xl font-bold text-yellow-600">
-                          {currentReading.light >= 1000 ? (currentReading.light / 1000).toFixed(1) : currentReading.light.toFixed(1)}
+                          {currentReading.light >= 1000 ? (currentReading.light / 1000).toFixed(0) : currentReading.light.toFixed(0)}
                         </span>
                         <span className="text-2xl font-semibold text-slate-400 dark:text-slate-500">
                           {currentReading.light >= 1000 ? 'k' : ''} lux
                         </span>
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">
+                      <div className="text-sm font-semibold text-yellow-600">
                         {currentReading.light < 1 ? '🌑 Moonlight' :
                          currentReading.light < 50 ? '🕯️ Very dim' :
                          currentReading.light < 500 ? '💡 Indoor lighting' :
                          currentReading.light < 10000 ? '🏢 Bright indoor' :
                          '☀️ Direct sunlight'}
                       </div>
+
+                      {/* Light scale bar */}
+                      <div className="space-y-2">
+                        <div className="relative h-2 bg-gradient-to-r from-slate-800 via-yellow-500 to-yellow-200 rounded-full">
+                          <div
+                            className="absolute top-1/2 -translate-y-1/2 w-1 h-4 bg-slate-900 dark:bg-white rounded-full"
+                            style={{
+                              left: `${Math.min(100, (Math.log10(currentReading.light + 1) / Math.log10(65536)) * 100)}%`,
+                              transform: 'translateX(-50%) translateY(-50%)'
+                            }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                          <span>0</span>
+                          <span>100</span>
+                          <span>1k</span>
+                          <span>10k</span>
+                          <span>65k</span>
+                        </div>
+                      </div>
+
                       <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
                         <div className="text-xs text-slate-500 dark:text-slate-400">
                           Sensor: <span className="font-mono">{currentReading.sensorModels?.light || 'light'}</span>
@@ -568,7 +589,7 @@ const Index = () => {
                             <>
                               <div className="flex items-baseline gap-2">
                                 <span className="text-6xl font-bold text-cyan-600">
-                                  {rainPercent.toFixed(1)}
+                                  {rainPercent.toFixed(0)}
                                 </span>
                                 <span className="text-2xl font-semibold text-slate-400 dark:text-slate-500">
                                   %
